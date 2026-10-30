@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>האזור האישי</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centred column for the client; progress band per project, then payments. Same palette as the studio CRM. */
+:root{
+  --bg:#F6F4F2; --surface:#FFFFFF; --surface-2:#F2EFEC; --ink:#1A2233; --muted:#7C818C; --line:#ECE8E4;
+  --accent:#E2747A; --accent-soft:#FBE4E4; --accent-ink:#FFFFFF;
+  --ok:#2F8A5B; --ok-soft:#E1F3E8; --warn:#AD3F52; --warn-soft:#FBE4E4; --bad:#C8434B; --bad-soft:#FBE2E3;
+  --shadow:0 1px 2px rgba(26,34,51,.04),0 8px 24px rgba(26,34,51,.05);
+  --f-display:"Rubik",system-ui,sans-serif; --f-body:"Rubik",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14161B; --surface:#1D2027; --surface-2:#262A32; --ink:#ECEDEF; --muted:#9AA0AB; --line:#2E323A;
+  --accent:#F08A90; --accent-soft:#3D2629; --accent-ink:#1A0F10;
+  --ok:#6DC795; --ok-soft:#1D3527; --warn:#F08A90; --warn-soft:#3D2629; --bad:#F07C82; --bad-soft:#3D2224;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14161B; --surface:#1D2027; --surface-2:#262A32; --ink:#ECEDEF; --muted:#9AA0AB; --line:#2E323A;
+  --accent:#F08A90; --accent-soft:#3D2629; --accent-ink:#1A0F10;
+  --ok:#6DC795; --ok-soft:#1D3527; --warn:#F08A90; --warn-soft:#3D2629; --bad:#F07C82; --bad-soft:#3D2224;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{padding-block:32px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.av{width:30px;height:30px;border-radius:50%;flex:none;display:inline-flex;align-items:center;justify-content:center;object-fit:cover;background:var(--surface-2);color:var(--muted);font-weight:500;font-size:14px;border:1px solid var(--line);overflow:hidden}
+img.av{background:#fff;object-fit:cover}
+.av.xl{width:68px;height:68px;font-size:26px}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pg{background:var(--surface);border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow)}
+.pg-top{background:linear-gradient(to left,var(--accent-soft),color-mix(in srgb,var(--accent-soft) 35%,var(--surface)));padding:24px 28px 26px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 20px;align-items:end}
+.pg-eyebrow{font-family:var(--f-display);font-size:26px;font-weight:500;line-height:1.2}
+.pg-sub{color:var(--muted);font-size:14.5px}
+.pg-pct{text-align:end}
+.pg-pct b{display:block;font-family:var(--f-display);font-size:42px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.pg-pct span{color:var(--muted);font-size:14px}
+.pg-bar{grid-column:1/-1;height:9px;border-radius:99px;background:color-mix(in srgb,var(--surface) 75%,transparent);overflow:hidden;margin-top:10px}
+.pg-bar i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.pg-steps{list-style:none;margin:0;padding:26px 10px 28px;display:flex;overflow-x:auto}
+.pg-steps li{flex:1 0 112px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative;padding:0 4px}
+.pg-steps .dot{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--muted);font-family:var(--f-display);font-size:20px;position:relative;z-index:1}
+.pg-steps li.done .dot{background:var(--accent);color:var(--accent-ink)}
+.pg-steps li.cur .dot{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 6px var(--accent-soft)}
+.pg-steps li:not(:last-child)::after{content:"";position:absolute;top:28px;height:3px;border-radius:3px;background:var(--surface-2);inset-inline-start:calc(50% + 40px);inset-inline-end:calc(-50% + 40px)}
+.pg-steps li.done::after{background:var(--accent)}
+.pg-steps .nm{font-weight:500;font-size:15px;max-width:15ch;line-height:1.3;margin-top:6px}
+.pg-steps li:not(.done):not(.cur) .nm{color:var(--muted)}
+.pg-steps .dt{font-size:12.5px;color:var(--muted)}
+.pg-steps .here{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:3px 12px;font-size:12.5px;font-weight:600;margin-top:4px}
+.pt{display:flex;flex-direction:column;gap:20px;max-width:960px;margin-inline:auto;width:100%}
+.pt-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pt-head h1{font-family:var(--f-display);font-size:30px;font-weight:500;margin:0;text-wrap:balance}
+.pt-head p{margin:2px 0 0;color:var(--muted)}
+.pt-eyebrow{font-size:13px;color:var(--muted);letter-spacing:.03em}
+.pt-pay{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:16px}
+.pt-pay h2{font-family:var(--f-display);font-size:20px;font-weight:500;margin:0}
+.pt-sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pt-s{border-radius:18px;padding:14px 18px;background:var(--surface-2);display:flex;flex-direction:column;gap:2px}
+.pt-s span{font-size:13px;color:var(--muted)}
+.pt-s b{font-family:var(--f-display);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.pt-s.paid{background:var(--ok-soft)} .pt-s.paid b{color:var(--ok)}
+.pt-s.due{background:var(--warn-soft)} .pt-s.due b{color:var(--warn)}
+.pt-s.clear{background:var(--ok-soft)} .pt-s.clear b{color:var(--ok);font-size:19px}
+.pt-list{display:flex;flex-direction:column}
+.pt-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px 18px;align-items:center;padding:14px 2px;border-top:1px solid var(--line)}
+.pt-row:first-child{border-top:0;padding-top:4px}
+.pt-d{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pt-d b{font-weight:500}
+.pt-d span{font-size:13px;color:var(--muted)}
+.pt-a{text-align:end;display:flex;flex-direction:column}
+.pt-a b{font-family:var(--f-display);font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.pt-a small{font-size:12px;color:var(--muted)}
+.pt-empty{color:var(--muted);margin:0}
+.pt-foot{color:var(--muted);font-size:13px;text-align:center}
+.pt-ad{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:20px;box-shadow:var(--shadow);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:22px;align-items:start}
+/* clean breathing room beside the ad, then the notes take the rest of the column */
+.pt-ad{gap:64px;padding:24px}
+.pt-ad-t{align-self:stretch;padding-block:28px 8px;padding-inline-end:16px}
+.pt-ad .pt-chat{flex:1;border:0;box-shadow:none;padding:28px 0 0;margin-top:20px;border-top:1px solid var(--line);border-radius:0;width:100%}
+.pt-ad .pt-chat textarea{flex:1;min-height:200px}
+@media (max-width:640px){.pt-ad{gap:20px;padding:16px}.pt-ad-t{padding:0}}
+.pt-ad img{width:100%;border-radius:14px;box-shadow:0 8px 24px rgba(26,34,51,.12);display:block}
+.pt-ad-t{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.pt-ad-t h3{font-family:var(--f-display);font-size:22px;font-weight:500;margin:0}
+.pt-ad-t p{margin:0;color:var(--muted);line-height:1.7}
+.pt-ad-st{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;background:var(--accent-soft);color:var(--accent)}
+.pt-ad-st.ok{background:var(--ok-soft);color:var(--ok)}
+@media (max-width:640px){.pt-ad{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.pg-top{padding:18px;grid-template-columns:1fr}.pg-pct{text-align:start}.pt-sum{grid-template-columns:minmax(0,1fr)}.pt-row{grid-template-columns:minmax(0,1fr) auto}.pt-row .pill{grid-column:1/-1;justify-self:start}.pt-head h1{font-size:24px}}
+/* notes to the studio during the revisions stage: a small chat that leaves through WhatsApp or email */
+.pt-chat{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.pt-chat h3{margin:0;font-family:var(--f-display);font-weight:500;font-size:19px}
+.pt-chat p{margin:0;color:var(--muted);font-size:14.5px}
+.ch-log{display:flex;flex-direction:column;gap:8px}
+.ch-b{align-self:flex-start;max-width:85%;background:var(--accent-soft);border-radius:16px 16px 4px 16px;padding:9px 14px;white-space:pre-wrap;font-size:15px}
+.ch-b small{display:block;color:var(--muted);font-size:11.5px;margin-top:3px}
+.pt-chat textarea{width:100%;box-sizing:border-box;min-height:96px;resize:vertical;border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px}
+.pt-chat textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.ch-acts{display:flex;gap:8px;flex-wrap:wrap}
+.ch-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:10px 18px;font-weight:600;font-size:15px;background:var(--ink);color:var(--surface)}
+.ch-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ch-btn[aria-disabled="true"]{opacity:.45;cursor:default}
+.ch-done{background:var(--ok-soft);color:var(--ok);border-radius:12px;padding:9px 14px;font-size:14.5px;font-weight:500}
+.ch-done[hidden]{display:none}
+.ch-done{display:flex;flex-direction:column;gap:6px;line-height:1.6}
+.ch-done.warn{background:var(--warn-soft);color:var(--warn)}
+.ch-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--ink);font-weight:400}
+.ch-chip{all:unset;cursor:pointer;font-size:12.5px;font-weight:600;border-radius:999px;padding:2px 10px;background:var(--surface);color:var(--ok);border:1px solid currentColor}
+/* her brand band above the client's greeting: warm beige, faint V strokes, the AVA mark in brown */
+.pt-brand{position:relative;height:140px;border-radius:26px;background:#EFEBE5;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.pt-brand svg{position:absolute;inset:0;width:100%;height:100%}
+.pt-brand img{position:relative;width:118px;height:auto}
+@media (max-width:640px){.pt-brand{height:96px;border-radius:20px}.pt-brand img{width:88px}}
+
+.pj{background:var(--surface);border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow)}
+.pj>.pg,.pj .pt-ad,.pj .pt-chat{border:0;box-shadow:none;border-radius:0}
+.pj .pt-ad{border-top:1px solid var(--line)}
+.pj-pay{border-top:1px solid var(--line);padding:18px 26px 20px;display:flex;flex-direction:column;gap:6px}
+.pj-pay-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pj-pay-h h3{margin:0;font-family:var(--f-display);font-weight:500;font-size:17px}
+.pj.done{box-shadow:none}
+.pj-sum{list-style:none;cursor:pointer;display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;padding:18px 24px}
+.pj-sum::-webkit-details-marker{display:none}
+.pj-t{font-family:var(--f-display);font-size:19px;font-weight:500;margin-inline-end:auto}
+.pj-more{font-size:13px;color:var(--muted)}.pj-more::after{content:" ▾"}
+.pj.done[open] .pj-sum{border-bottom:1px solid var(--line)}.pj.done[open] .pj-more::after{content:" ▴"}
+.pj.done .pg-top{background:var(--surface-2)}
+
+.pj-files{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;text-decoration:none;background:var(--ink);color:var(--surface)}
+.pj-files:hover{opacity:.88}
+.paid-fold{border-radius:12px;background:var(--surface-2)}
+.paid-fold>summary{list-style:none;cursor:pointer;padding:9px 14px;font-size:13.5px;color:var(--muted);font-weight:500}
+.paid-fold>summary::-webkit-details-marker{display:none}
+.paid-fold>summary::after{content:" ▾"}.paid-fold[open]>summary::after{content:" ▴"}
+.paid-fold .pt-list{padding:0 14px 8px;opacity:.75}
+.paid-fold .pt-row{padding:8px 0}.paid-fold .pt-a b{font-size:15px}
+
+.pg-ttl{display:flex;align-items:center;gap:16px;min-width:0}
+.pj-cover{width:76px;height:76px;border-radius:14px;object-fit:cover;flex:none;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.pj-thumb{width:96px;height:96px;border-radius:16px;object-fit:cover;flex:none;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.pj-sum.has-cover{padding:14px 16px}
+.pj-wait{display:flex;flex-direction:column;gap:2px;background:var(--accent);color:var(--accent-ink);padding:14px 26px;font-size:15.5px}
+.pj-wait b{font-size:17px;font-weight:700}
+.pj-files-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding:14px 26px}
+.pt-due{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--warn-soft);border-radius:18px;padding:18px 22px}
+.pt-due div{display:flex;flex-direction:column;gap:2px}
+.pt-due span{color:var(--warn);font-weight:600;font-size:15px}.pt-due small{color:var(--muted);font-size:13px}
+.pt-due b{font-family:var(--f-display);font-size:30px;font-weight:600;color:var(--warn);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pt-due-a{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.paid-fold.all{background:var(--ok-soft)}.paid-fold.all>summary{color:var(--ok);font-size:15px;font-weight:600;padding:14px 18px}
+.pt-vat{margin:0;font-size:12px;color:var(--muted)}
+.pt-due.clear{background:var(--ok-soft)}.pt-due.clear span,.pt-due.clear b{color:var(--ok)}.pt-due.clear b{font-size:20px}
+@media (max-width:560px){.pj-cover{width:58px;height:58px}.pj-thumb{width:72px;height:72px;border-radius:12px}.pt-due b{font-size:24px}}
+
+.pj.done .pg-ttl{display:none}
+.nm small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+
+/* the client portal wears the brand: natural beige, a warm taupe from the logo, black only for the one thing that matters now */
+.pt{--ink:#1A1A1A;--accent:#9C8A72;--accent-soft:#EFEBE5;--accent-ink:#FFFFFF;--warn:#6E5A40;--warn-soft:#EFEBE5;--bad:#8E3B32;--bad-soft:#F3E7E3;--ok:#3F6A4F;--ok-soft:#E8EEE8;--line:#E6E0D8}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pt{--ink:#EDEAE4;--accent:#BFAE95;--accent-soft:#2A2621;--accent-ink:#15130F;--warn:#D9C4A3;--warn-soft:#2A2621;--bad:#E39A8F;--bad-soft:#36231F;--ok:#8DBF9C;--ok-soft:#1F2C23;--line:#34302A}}
+:root[data-theme="dark"] .pt{--ink:#EDEAE4;--accent:#BFAE95;--accent-soft:#2A2621;--accent-ink:#15130F;--warn:#D9C4A3;--warn-soft:#2A2621;--bad:#E39A8F;--bad-soft:#36231F;--ok:#8DBF9C;--ok-soft:#1F2C23;--line:#34302A}
+.pt .pg-top{background:var(--accent-soft)}
+.pt .pj-wait{background:var(--accent-soft);color:var(--ink);border-bottom:1px solid var(--line);border-inline-start:4px solid var(--ink)}
+.pt .pt-due b{color:var(--ink)}
+.pt .pg-steps li.cur .dot{background:var(--ink);color:var(--surface);box-shadow:0 0 0 6px var(--accent-soft)}
+.pt .pg-steps .here{background:var(--accent-soft);color:var(--ink);border:1px solid var(--line)}
+.pt .pj-files{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+.pt .pj-cnotes{border-top:1px solid var(--line);padding:16px 26px;display:flex;flex-direction:column;gap:8px}
+.pt .pj-cnotes h3{margin:0;font-size:15px;font-weight:600}
+.pt .pj-cn{background:var(--accent-soft);border-radius:14px;padding:9px 14px;white-space:pre-wrap;font-size:15px}
+.pt .pj-cn small{display:block;color:var(--muted);font-size:12px}
+.ch-read{color:var(--ok);font-weight:600}
+/* calmer, smaller type; the live project stands alone on top, finished work sits below, small and quiet */
+.pt{gap:16px;font-size:14.5px}
+.pt .pt-brand{height:108px}.pt .pt-brand img{width:96px}
+.pt-head h1{font-size:23px}.pt-head p{font-size:13.5px}.pt-eyebrow{font-size:12px}
+.pt .av.xl{width:56px;height:56px;font-size:22px}
+.pt .pg-top{padding:18px 22px 20px}
+.pt .pg-eyebrow{font-size:19px}.pt .pg-sub{font-size:12.5px}
+.pt .pg-pct b{font-size:30px}.pt .pg-pct span{font-size:12px}
+.pt .pg-bar{height:6px}
+.pt .pj-cover{width:56px;height:56px;border-radius:12px}
+.pt .pg-steps{padding:20px 8px 22px}
+.pt .pg-steps .dot{width:42px;height:42px;font-size:15px}.pt .pg-steps .dot svg{width:19px;height:19px}
+.pt .pg-steps li.cur .dot{box-shadow:0 0 0 5px var(--accent-soft)}
+.pt .pg-steps li:not(:last-child)::after{top:21px;height:2px;inset-inline-start:calc(50% + 30px);inset-inline-end:calc(-50% + 30px)}
+.pt .pg-steps .nm{font-size:13px;margin-top:4px}
+.pt .pg-steps .dt,.pt .pg-steps .here{font-size:11px}
+.pt .pj-wait{font-size:13px;padding:12px 22px}.pt .pj-wait b{font-size:14px}
+.pt .pj-files-row{padding:12px 22px}
+.pt .pj-files{font-size:12.5px;padding:4px 12px}
+.pt .pill{font-size:11px;padding:2px 9px}
+.pt .pt-pay{padding:20px;gap:12px}.pt .pt-pay h2{font-size:16px}
+.pt .pt-due{padding:14px 18px}.pt .pt-due span{font-size:13.5px}.pt .pt-due b{font-size:22px}
+.pt .pt-row{padding:11px 2px}.pt .pt-a b{font-size:15px}
+.pt .pt-ad-t h3{font-size:17px}.pt .pt-ad-st{font-size:12.5px;padding:4px 12px}
+.pt .pt-chat h3{font-size:15.5px}.pt .pt-chat p{font-size:13px}
+.pt .ch-b,.pt .pt-chat textarea,.pt .pj-cn{font-size:14px}
+.pt .ch-btn{font-size:14px;padding:8px 16px}
+.pt-foot{font-size:12px}
+.pt-sec{margin:0 6px 10px;font-size:12px;font-weight:600;letter-spacing:.04em;color:var(--muted)}
+.pt-now,.pt-past{display:flex;flex-direction:column;gap:12px}
+.pt-now .pj{border-color:color-mix(in srgb,var(--ink) 18%,var(--line));box-shadow:0 2px 6px rgba(26,34,51,.05),0 16px 40px rgba(26,34,51,.08)}
+.pt-past{margin-top:22px;padding-top:22px;border-top:1px solid var(--line);gap:8px}
+.pt-past .pj{background:var(--accent-soft);border-color:transparent;border-radius:16px;box-shadow:none}
+.pt-past .pj[open]{background:var(--surface);border-color:var(--line)}
+.pt-past .pj-sum,.pt-past .pj-sum.has-cover{padding:9px 14px;gap:6px 10px}
+.pt-past .pj-thumb{width:40px;height:40px;border-radius:9px;box-shadow:none}
+.pt-past .pj-t{font-size:14px;font-weight:500}
+.pt-past .pj-files{font-size:12px;padding:2px 10px;border-color:var(--line)}
+.pt-past .pj-more{font-size:12px}
+.pt-past+.pt-pay,.pt-now+.pt-pay{margin-top:14px}
+/* what the client owes us right now: a soft pink box, the one coloured thing on the page */
+.pt .pj-wait{margin:16px 16px 0;border-radius:16px;border:1px solid #F2C4C9;border-inline-start:1px solid #F2C4C9;background:#FBE4E6;color:#8E2F44;padding:14px 18px;gap:4px}
+.pt .pj-wait b{color:#B3364F;font-size:15px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pt .pj-wait{background:#3D2629;border-color:#5A3439;color:#F3C9CF}:root:not([data-theme="light"]) .pt .pj-wait b{color:#F08A97}}
+:root[data-theme="dark"] .pt .pj-wait{background:#3D2629;border-color:#5A3439;color:#F3C9CF}:root[data-theme="dark"] .pt .pj-wait b{color:#F08A97}
+/* the chat card: my notes on the start side, the other side's on the end side; the composer is one rounded row like a messaging app */
+.pt-chat{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:0;padding:0;margin-top:22px;overflow:hidden;scroll-margin-top:16px}
+.ch-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line)}
+.ch-head h2{margin:0;font-family:var(--f-display);font-weight:500;font-size:19px}
+.ch-log{display:flex;flex-direction:column;gap:10px;padding:18px 16px;max-height:min(460px,62vh);min-height:140px;overflow-y:auto;background:var(--bg)}
+.ch-empty{margin:auto;color:var(--muted);font-size:14.5px;text-align:center;max-width:34ch}
+.ch-m{display:flex}
+.ch-m.me{justify-content:flex-start}
+.ch-m.them{justify-content:flex-end}
+.ch-b{max-width:min(82%,520px);border-radius:18px;padding:9px 14px;font-size:15px;display:flex;flex-direction:column;gap:6px;white-space:normal}
+.ch-m.me .ch-b{background:var(--accent-soft);border-start-start-radius:6px}
+.ch-m.them .ch-b{background:var(--surface);border:1px solid var(--line);border-start-end-radius:6px}
+.ch-t{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55}
+.ch-t a{color:inherit}
+.ch-b small{display:block;color:var(--muted);font-size:11.5px;margin:0}
+.ch-read{color:var(--ok);font-weight:600}
+.ch-b audio{width:min(260px,62vw);height:40px}
+.ch-pic{display:block;max-width:100%;max-height:260px;border-radius:12px}
+.ch-pic.wait{color:var(--muted);font-size:13.5px}
+.ch-play,.ch-filebtn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-weight:500;font-size:14.5px;padding:6px 12px 6px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+.ch-play:focus-visible,.ch-filebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ch-pidl{display:flex;align-items:center;gap:8px;padding:10px 16px 0;font-size:13.5px;color:var(--muted)}
+.ch-pidl select{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 8px}
+.ch-att{display:flex;align-items:center;gap:10px;padding:10px 16px 0;flex-wrap:wrap}
+.ch-att img{max-height:84px;border-radius:10px;border:1px solid var(--line)}
+.ch-att audio{height:38px;max-width:100%}
+.ch-att[hidden],.ch-comp[hidden],.ch-rec[hidden]{display:none}
+.ch-comp{display:flex;align-items:flex-end;gap:6px;padding:12px}
+.ch-comp textarea{flex:1;min-width:0;min-height:46px;max-height:160px;resize:none;border:1px solid var(--line);border-radius:22px;padding:11px 16px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;line-height:1.45}
+.ch-comp textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+.ch-ic{all:unset;cursor:pointer;flex:none;width:44px;height:46px;display:inline-grid;place-items:center;color:var(--muted);border-radius:50%}
+.ch-ic:hover{color:var(--ink)}
+.ch-ic:focus-visible,.ch-ic:focus-within{outline:2px solid var(--accent);outline-offset:1px}
+.ch-send{all:unset;cursor:pointer;flex:none;width:46px;height:46px;border-radius:50%;display:inline-grid;place-items:center;background:var(--ink);color:var(--surface)}
+.ch-send svg{transform:scaleX(-1)}
+.ch-send:disabled{opacity:.5;cursor:default}
+.ch-send:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ch-rec{display:flex;align-items:center;gap:12px;padding:12px 16px;font-weight:500}
+.ch-dot{width:11px;height:11px;border-radius:50%;background:var(--bad);animation:ch-pulse 1.1s ease-in-out infinite}
+@keyframes ch-pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.ch-dot{animation:none}}
+#ch-rt{font-variant-numeric:tabular-nums;min-width:3.2em}
+.ch-rl{color:var(--muted);font-weight:400;margin-inline-end:auto}
+.ch-x{all:unset;cursor:pointer;font-size:14px;color:var(--muted);padding:6px 10px;border-radius:999px}
+.ch-x:focus-visible{outline:2px solid var(--accent)}
+.ch-stop{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:var(--bad);color:#fff;border-radius:999px;padding:8px 16px;font-weight:600;font-size:14.5px}
+.ch-stop:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.pt-chat .ch-done{margin:0 12px 12px}
+.ch-jump{display:block;margin:12px 0 0;line-height:1.5;text-decoration:none;color:var(--accent);font-weight:600;font-size:15px;}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:640px){.ch-log{max-height:60vh}.ch-b{max-width:88%}}
+
+</style>
+</head><body>
+
+<div class="wrap" dir="rtl" lang="he" id="root"></div>
+
+<script>
+(async () => {
+"use strict";
+const EXEC = "https://script.google.com/macros/s/AKfycbwRWquLwgw_ide__KGdFFUFX-vPtm8TtNq1pLQ_R6nDLTJRaT4-K3a62W7HGjvccGvw/exec";
+const Q = new URLSearchParams(location.search), KEY = Q.get("k") || "";
+/* Chavi answers from this page: her view key arrives once in her link, then stays in her browser only and leaves the address bar */
+let VK = Q.get("v") || "";
+try { if (VK) localStorage.setItem("ava-vk", VK); else VK = localStorage.getItem("ava-vk") || ""; } catch {}
+if (Q.get("v")) history.replaceState(null, "", location.pathname + "?k=" + encodeURIComponent(KEY));
+const $root = document.getElementById("root");
+$root.innerHTML = '<p class="pt-empty" style="text-align:center;padding:60px 0">רגע, טוען…</p>';
+const vq = () => VK ? "&v=" + encodeURIComponent(VK) : "";
+const api = q => fetch(EXEC + "?" + q).then(r => r.json());
+/* text/plain keeps the request simple, so the browser sends it to Google without asking first */
+const post = o => fetch(EXEC, {method: "POST", body: JSON.stringify(o)}).then(r => r.json());
+let J = null; try { if (KEY) J = await api("pd=" + encodeURIComponent(KEY) + vq()); } catch {}
+if (!J || !J.ok) { $root.innerHTML = '<p class="pt-empty" style="text-align:center;padding:60px 0">הקישור הזה לא פעיל. בקשי מחוי קישור חדש.</p>'; return; }
+const DATA = J.data, ME = !!J.studio; let NOTES = J.notes || [];
+document.title = (ME ? "צ׳אט · " : "") + DATA.client.name + " · מעקב עבודה";
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pd = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const dm = s => { if (!s) return ""; const d = pd(s); return `${d.getDate()}.${d.getMonth()+1}`; };
+const todayS = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
+const daysUntil = s => Math.round((pd(s) - pd(todayS))/864e5);
+const money = n => new Intl.NumberFormat("he-IL",{style:"currency",currency:"ILS",maximumFractionDigits:0}).format(+n||0);
+const vat = +DATA.vat || 18;
+const hasVat = p => p.vat !== false;
+const gross = p => (+p.amount||0) * (hasVat(p) ? 1 + vat/100 : 1);
+const sum = l => l.reduce((a,p)=>a+gross(p),0);
+const partsSum = p => (p.parts || []).reduce((a,x)=>a+(+x.amt||0),0);
+const paidOf = p => p.paidOn ? gross(p) : Math.min(gross(p), partsSum(p));
+const leftOf = p => Math.max(0, gross(p) - paidOf(p));
+const sDone = s => !!s.done || (s.tasks.length>0 && s.tasks.every(t=>t.done));
+const curIdx = p => { const i = p.stages.findIndex(s=>!sDone(s)); return i<0 ? p.stages.length : i; };
+const pct = p => Math.round(p.stages.filter(sDone).length / Math.max(1,p.stages.length) * 100);
+const payPill = p => p.paidOn ? `<span class="pill ok">שולם</span>` : partsSum(p) > 0 ? `<span class="pill warn">שולם חלק · נותרו ${money(leftOf(p))}</span>` : p.due && daysUntil(p.due) < 0 ? `<span class="pill bad">באיחור</span>` : `<span class="pill warn">ממתין</span>`;
+const I_CHECK = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const I_PIN = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>';
+
+function progressBlock(p){
+  const ci = curIdx(p), done = p.stages.filter(sDone).length, n = p.stages.length, pc = pct(p);
+  const sub = [p.size, p.outlet && "ב־"+p.outlet, p.deadline && "מסירה "+dm(p.deadline)].filter(Boolean).map(esc).join(" · ");
+  return `<section class="pg"><div class="pg-top"><div class="pg-ttl">${p.cover ? `<img class="pj-cover" src="${esc(p.cover)}" alt="">` : ""}<div><div class="pg-eyebrow">${esc(p.title)}</div><div class="pg-sub">${sub}</div></div></div>
+    <div class="pg-pct"><b>${pc}%</b><span>${done} מתוך ${n} שלבים</span></div><div class="pg-bar"><i style="width:${pc}%"></i></div></div>
+    <ol class="pg-steps">${p.stages.map((s,i)=>{ const d = sDone(s), c = i===ci;
+      return `<li class="${d?"done":c?"cur":""}"><span class="dot">${d?I_CHECK:c?I_PIN:i+1}</span><span class="nm">${/ · /.test(s.name) ? `<small>${esc(s.name.split(" · ")[0])}</small>${esc(s.name.split(" · ").slice(1).join(" · "))}` : esc(s.name)}</span>
+        <span class="dt">${d ? (s.doneOn?"הושלם · "+dm(s.doneOn):"הושלם") : s.due ? "יעד · "+dm(s.due) : ""}</span>${c?`<span class="here">${(p.waiting||[]).length?"מחכים לך":"אנחנו כאן"}</span>`:""}</li>`; }).join("")}</ol></section>`;
+}
+
+/* open the chat while the work waits for the client's notes: the revisions stage, or right after the ad was sent */
+const REV = /שינוי|תיקון|דיוק|הערות/;
+const wantsNotes = p => { const s = p.stages[curIdx(p)]; return !p._done && ((s && REV.test(s.name)) || (p.ad && p.ad.status === "sent")); };
+const LSK = id => "studio-notes-v2-" + (id || "");  /* v2: the trial notes from 27.10 are left behind */
+const readLog = id => { try { return JSON.parse(localStorage.getItem(LSK(id)) || "[]"); } catch { return []; } };
+const writeLog = (id, l) => { try { localStorage.setItem(LSK(id), JSON.stringify(l.slice(-30))); } catch {} };
+/* the chat with the studio: text, voice recordings, pictures and files, both ways.
+   Every note goes straight to the script (Chavi also gets the client's notes by email); her answers show up here by themselves. */
+const when = at => { const d = new Date(at), t = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`, n = new Date(); n.setHours(0,0,0,0);
+  const x = new Date(at); x.setHours(0,0,0,0); const k = Math.round((n - x) / 864e5); return k <= 0 ? "היום " + t : k === 1 ? "אתמול " + t : `${d.getDate()}.${d.getMonth()+1} · ${t}`; };
+const dur = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
+const linkify = h => h.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.length > 44 ? u.slice(0, 44) + "…" : u}</a>`);
+const SVG = (d, w = 22) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const I_MIC = SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>');
+const I_CLIP = SVG('<path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.2-8.2a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.7 1.7 0 0 1-2.4-2.4l7.4-7.4"/>');
+const I_SEND = SVG('<path d="M20 4L9.5 14.5M20 4l-6.5 16-4-5.5L4 10.5z"/>');
+const I_STOP = SVG('<rect x="6" y="6" width="12" height="12" rx="2.5"/>');
+const I_PLAY = SVG('<path d="M8 5.5v13l10.5-6.5z"/>', 18);
+
+const openPs = () => ps.filter(p => !p._done);
+const defPid = () => { const o = openPs(); return (o.find(wantsNotes) || o[0] || ps[0] || {}).id || ""; };
+const chatPid = () => { const s = document.getElementById("ch-pid"); return s ? s.value : defPid(); };
+const ptitle = id => (ps.find(p => p.id === id) || {}).title || "";
+const mine = n => (n.from === "studio") === ME;   // this side of the chat
+
+/* files live in Drive behind the script; each one is fetched once, when it is needed */
+const MEDIA = new Map();
+async function media(id){
+  if (MEDIA.has(id)) return MEDIA.get(id);
+  const j = await api("pm=" + encodeURIComponent(KEY) + "&id=" + encodeURIComponent(id));
+  if (!j || !j.ok) throw new Error("media");
+  const bin = atob(j.b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+  const url = URL.createObjectURL(new Blob([u8], {type: j.mime})); MEDIA.set(id, url); return url;
+}
+function fileHtml(f){
+  if (f.kind === "audio") return MEDIA.has(f.id) ? `<audio controls preload="metadata" src="${MEDIA.get(f.id)}"></audio>`
+    : `<button type="button" class="ch-play" data-fid="${esc(f.id)}">${I_PLAY}<span>הודעה קולית${f.dur ? " · " + dur(f.dur) : ""}</span></button>`;
+  if (f.kind === "image") return MEDIA.has(f.id) ? `<a href="${MEDIA.get(f.id)}" target="_blank" rel="noopener"><img class="ch-pic" src="${MEDIA.get(f.id)}" alt="תמונה"></a>`
+    : `<span class="ch-pic wait" data-img="${esc(f.id)}">🖼 טוען תמונה…</span>`;
+  return `<button type="button" class="ch-filebtn" data-fid="${esc(f.id)}" data-name="${esc(f.name)}">📎 ${esc(f.name)}</button>`;
+}
+function bubble(n){
+  const me = mine(n), who = n.from === "studio" ? (DATA.studio || "חוי") : (c.contact || c.name);
+  const proj = ps.length > 1 && n.pid && ptitle(n.pid) ? esc(ptitle(n.pid)) + " · " : "";
+  const read = me ? (n.readAt ? ` · <span class="ch-read">✓ נקרא</span>` : " · נשלח") : "";
+  return `<div class="ch-m ${me ? "me" : "them"}"><div class="ch-b">${n.f ? fileHtml(n.f) : ""}${n.t ? `<div class="ch-t">${linkify(esc(n.t))}</div>` : ""}
+    <small>${me ? "" : esc(who) + " · "}${proj}${when(n.at)}${read}</small></div></div>`;
+}
+const logHtml = () => NOTES.length ? NOTES.map(bubble).join("")
+  : `<p class="ch-empty">${ME ? "עוד אין הודעות עם הלקוח." : "עוד אין הודעות. אפשר לכתוב לי כאן כל שאלה או הערה, להקליט הודעה קולית 🎤 או לצרף תמונה וצילום מסך."}</p>`;
+
+/* inside a project that waits for notes: a short way down to the chat, already set to that project */
+function chatBlock(p){
+  if (ME || !wantsNotes(p)) return "";
+  return `<a class="ch-jump" href="#chat" data-pid="${esc(p.id)}">✎ יש הערות או תיקונים? כתבי או הקליטי לי בצ׳אט ↓</a>`;
+}
+function chatCard(){
+  const o = openPs(), d = defPid();
+  return `<section class="pt-chat" id="chat"><div class="ch-head"><h2>צ׳אט עם ${ME ? esc(c.contact || c.name) : esc(DATA.studio || "חוי")}</h2>${ME ? `<span class="pill warn">מצב סטודיו · הלקוח רואה את מה שתשלחי</span>` : ""}</div>
+    <div class="ch-log" id="ch-log" aria-live="polite">${logHtml()}</div>
+    ${o.length > 1 ? `<label class="ch-pidl">לגבי <select id="ch-pid">${o.map(p => `<option value="${esc(p.id)}"${p.id === d ? " selected" : ""}>${esc(p.title)}</option>`).join("")}</select></label>` : ""}
+    <div class="ch-att" id="ch-att" hidden></div>
+    <div class="ch-comp" id="ch-comp">
+      <label class="ch-ic" title="צירוף תמונה או קובץ"><input type="file" id="ch-file" accept="image/*,application/pdf,audio/*" hidden>${I_CLIP}<span class="sr">צירוף תמונה או קובץ</span></label>
+      <textarea id="ch-ta" rows="1" maxlength="4000" aria-label="הודעה" placeholder="${ME ? "תשובה ללקוח…" : "כתבי הודעה…"}"></textarea>
+      <button type="button" class="ch-ic" id="ch-mic" title="הקלטה קולית" aria-label="הקלטה קולית">${I_MIC}</button>
+      <button type="button" class="ch-send" id="ch-send" aria-label="שליחה" title="שליחה">${I_SEND}</button>
+    </div>
+    <div class="ch-rec" id="ch-rec" hidden><span class="ch-dot" aria-hidden="true"></span><span id="ch-rt">0:00</span><span class="ch-rl">מקליטה…</span>
+      <button type="button" class="ch-x" id="ch-rx">ביטול</button><button type="button" class="ch-stop" id="ch-rs">${I_STOP}<span>סיום</span></button></div>
+    <div class="ch-done" id="ch-note" role="status" hidden></div></section>`;
+}
+
+let ATT = null;   // what goes with the next message: {blob, name, mime, dur, url}
+const note = (t, bad) => { const el = document.getElementById("ch-note"); if (!el) return; el.hidden = !t; el.textContent = t || ""; el.classList.toggle("warn", !!bad); };
+function showAtt(){
+  const el = document.getElementById("ch-att"); if (!el) return;
+  if (!ATT) { el.hidden = true; el.innerHTML = ""; return; }
+  el.hidden = false;
+  el.innerHTML = (ATT.mime.startsWith("audio/") ? `<audio controls src="${ATT.url}"></audio>` : ATT.mime.startsWith("image/") ? `<img src="${ATT.url}" alt="">` : `<span>📎 ${esc(ATT.name)}</span>`)
+    + `<button type="button" class="ch-x" id="ch-ax">הסרה</button>`;
+}
+function setAtt(blob, name, d){
+  if (ATT) URL.revokeObjectURL(ATT.url);
+  if (blob && blob.size > 10 * 1024 * 1024) { ATT = null; showAtt(); note("הקובץ גדול מדי (עד 10MB). אפשר לשלוח אותו במייל.", true); return; }
+  ATT = blob ? {blob, name: name || "", mime: blob.type || "application/octet-stream", dur: d || 0, url: URL.createObjectURL(blob)} : null;
+  showAtt(); note("");
+}
+function drawLog(force){
+  const el = document.getElementById("ch-log"); if (!el) return;
+  if (!force && [...el.querySelectorAll("audio")].some(a => !a.paused)) return;   // never cut a recording that is playing
+  const atEnd = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+  el.innerHTML = logHtml();
+  el.querySelectorAll("[data-img]").forEach(s => media(s.dataset.img).then(u => { s.outerHTML = `<a href="${u}" target="_blank" rel="noopener"><img class="ch-pic" src="${u}" alt="תמונה"></a>`; }).catch(() => { s.textContent = "🖼 התמונה לא נטענה"; }));
+  if (atEnd || force) el.scrollTop = el.scrollHeight;
+}
+const b64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(blob); });
+async function send(){
+  const ta = document.getElementById("ch-ta"), btn = document.getElementById("ch-send"), t = ta.value.trim();
+  if (!t && !ATT) { ta.focus(); return; }
+  btn.disabled = true; note(ATT ? "שולחת… (קובץ או הקלטה לוקחים כמה שניות)" : "");
+  try {
+    const o = {action: "msg", key: KEY, pid: chatPid(), t};
+    if (VK) o.v = VK;
+    if (ATT) o.f = {b64: await b64(ATT.blob), mime: ATT.mime, name: ATT.name, dur: ATT.dur};
+    const r = await post(o);
+    if (!r || !r.ok) throw new Error((r && r.error) || "x");
+    if (ATT && r.note.f) MEDIA.set(r.note.f.id, ATT.url), ATT = null;   // the file is already here: no need to fetch it back
+    NOTES.push(r.note); ta.value = ""; ta.style.height = ""; setAtt(null); drawLog(true);
+    note(ME ? "✓ נשלח. הלקוח יראה את זה כשייכנס לפורטל." : "✓ נשלח. ההודעה הגיעה אליי, אחזור אלייך בהקדם.");
+  } catch (e) {
+    note(String(e.message) === "too big" ? "הקובץ גדול מדי. אפשר לשלוח אותו במייל." : String(e.message) === "too many" ? "נשלחו הרבה הודעות בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. בדקי את החיבור ונסי שוב.", true);
+  } finally { btn.disabled = false; }
+}
+
+/* voice: the browser records in its own format (webm in Chrome and Android, mp4 on iPhone); up to 5 minutes */
+let REC = null;
+async function recStart(){
+  if (!navigator.mediaDevices || !window.MediaRecorder) { note("הדפדפן הזה לא מאפשר הקלטה. אפשר לכתוב, או לצרף קובץ שמע מהטלפון.", true); return; }
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({audio: true}); }
+  catch { note("אין גישה למיקרופון. צריך לאשר לדפדפן להשתמש במיקרופון ולנסות שוב.", true); return; }
+  const type = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+  const mr = new MediaRecorder(stream, type ? {mimeType: type, audioBitsPerSecond: 48000} : undefined), parts = [], t0 = Date.now();
+  REC = {mr, stream, t0, cancel: false, tick: setInterval(() => { const s = (Date.now() - t0) / 1000; document.getElementById("ch-rt").textContent = dur(s); if (s >= 300) recStop(false); }, 250)};
+  mr.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
+  mr.onstop = () => { const r = REC; REC = null; clearInterval(r.tick); r.stream.getTracks().forEach(x => x.stop());
+    document.getElementById("ch-rec").hidden = true; document.getElementById("ch-comp").hidden = false;
+    if (r.cancel || !parts.length) return;
+    setAtt(new Blob(parts, {type: (mr.mimeType || type || "audio/webm").split(";")[0]}), "", Math.round((Date.now() - r.t0) / 1000));
+    note("האזיני אם תרצי, ולחצי על כפתור השליחה.");
+  };
+  mr.start(1000);
+  document.getElementById("ch-comp").hidden = true; document.getElementById("ch-rec").hidden = false; note("");
+}
+function recStop(cancel){ if (!REC) return; REC.cancel = cancel; REC.mr.stop(); }
+
+function chatInit(){
+  drawLog(true);
+  const ta = document.getElementById("ch-ta");
+  const grow = () => { ta.style.height = ""; ta.style.height = Math.min(160, ta.scrollHeight + 2) + "px"; };
+  ta.addEventListener("input", grow);
+  /* Enter sends on a computer; on a phone Enter is a new line and the button sends */
+  ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches) { e.preventDefault(); send(); } });
+  ta.addEventListener("paste", e => { const f = [...(e.clipboardData || {}).items || []].find(i => i.kind === "file"); if (f) { e.preventDefault(); const b = f.getAsFile(); setAtt(b, b.name && b.name !== "image.png" ? b.name : "צילום מסך.png"); } });
+  document.getElementById("ch-file").addEventListener("change", e => { const f = e.target.files[0]; if (f) setAtt(f, f.name); e.target.value = ""; });
+  document.addEventListener("click", async e => {
+    const t = e.target.closest("button, a.ch-jump"); if (!t) return;
+    if (t.id === "ch-send") return send();
+    if (t.id === "ch-mic") return recStart();
+    if (t.id === "ch-rs") return recStop(false);
+    if (t.id === "ch-rx") return recStop(true);
+    if (t.id === "ch-ax") { setAtt(null); return; }
+    if (t.classList.contains("ch-jump")) { const s = document.getElementById("ch-pid"); if (s) s.value = t.dataset.pid; setTimeout(() => ta.focus({preventScroll: true}), 400); return; }
+    if (t.classList.contains("ch-play")) { t.disabled = true; t.querySelector("span").textContent = "טוען…";
+      try { const u = await media(t.dataset.fid), a = document.createElement("audio"); a.controls = true; a.src = u; t.replaceWith(a); a.play().catch(() => {}); }
+      catch { t.disabled = false; t.querySelector("span").textContent = "לא נטען, נסי שוב"; } return; }
+    if (t.classList.contains("ch-filebtn")) { try { const u = await media(t.dataset.fid), a = document.createElement("a"); a.href = u; a.download = t.dataset.name || "file"; a.click(); } catch { note("הקובץ לא נטען. נסי שוב.", true); } }
+  });
+  /* new notes and "✓ נקרא" arrive by themselves while the page is open */
+  const sig = l => l.map(n => n.at + ":" + (n.readAt ? 1 : 0)).join(",");
+  setInterval(async () => {
+    if (document.visibilityState !== "visible" || REC) return;
+    try { const j = await api("pd=" + encodeURIComponent(KEY) + "&n=1" + vq()); if (j && j.ok && sig(j.notes) !== sig(NOTES)) { NOTES = j.notes; drawLog(false); } } catch {}
+  }, 15000);
+}
+
+/* one card per project: progress, the ad, notes, and the project's own payments at the bottom.
+   Finished projects fold into a single line that says the work is closed and whether it is paid. */
+const payRef = y => { const m = String(y.ref || y.note || "").match(/(דרישת תשלום|חשבונית מס\/קבלה|קבלה)\s*(\d+)/); return m ? `${m[1]} ${m[2]}` : ""; };
+const filesBtn = p => p.finalUrl ? `<a class="pj-files" href="${esc(p.finalUrl)}" target="_blank" rel="noopener">📁 הקבצים הסופיים</a>` : "";
+const waitBlock = p => (p.waiting || []).length ? `<div class="pj-wait" role="status"><b>⏳ מחכים לך</b><span>ההמשך תלוי בך: ${p.waiting.map(esc).join(" · ")}</span></div>` : "";
+const projLeft = pp => pp.reduce((a,y)=>a+leftOf(y),0);
+const payTag = pp => !pp.length ? "" : projLeft(pp) ? `<span class="pill warn">ממתין לתשלום</span>` : `<span class="pill ok">✓ שולם</span>`;
+/* one card per project: what is waiting, progress, the ad. Money lives in one place at the bottom. */
+function projCard(p, pp, inner, done){
+  const foot = (p.finalUrl || pp.length) ? `<div class="pj-files-row">${filesBtn(p)}${payTag(pp)}</div>` : "";
+  if (!done) return `<article class="pj">${waitBlock(p)}${inner}${foot}</article>`;
+  const last = p.stages.map(s=>s.doneOn||"").filter(Boolean).sort().pop();
+  return `<details class="pj done"><summary class="pj-sum ${p.cover?"has-cover":""}">${p.cover ? `<img class="pj-thumb" src="${esc(p.cover)}" alt="${esc(p.title)}">` : ""}<span class="pj-t">${esc(p.title)}</span><span class="pill ok">✓ הושלם${last?" · "+dm(last):""}</span>
+    ${payTag(pp)}${filesBtn(p)}<span class="pj-more">פרטים</span></summary>${inner}</details>`;
+}
+/* the work in progress first, on its own; finished work below, smaller, under its own small title */
+function projList(ps, isDone, card){
+  if (!ps.length) return `<p class="pt-empty">אין עבודות כרגע.</p>`;
+  const now = ps.filter(p => !isDone(p)), past = ps.filter(isDone);
+  return (now.length ? `<section class="pt-now"><h2 class="pt-sec">בעבודה עכשיו</h2>${now.map(card).join("")}</section>` : "")
+    + (past.length ? `<section class="pt-past"><h2 class="pt-sec">עבודות שהסתיימו</h2>${past.map(card).join("")}</section>` : "");
+}
+/* all the money in one card, each sum shown once:
+   open → one strong line per open request (or one big line when there is only one), plus the total when there are several;
+   paid → a single quiet folded line; the details only for whoever opens it. */
+function payBlock(ps, pays){
+  if (!pays.length) return "";
+  const title = y => (ps.find(p => p.id === y.projectId) || {}).title || y.label || "תשלום";
+  const open = pays.filter(y => leftOf(y) > 0), done = pays.filter(y => !(leftOf(y) > 0));
+  const left = open.reduce((a,y)=>a+leftOf(y),0), paidDone = done.reduce((a,y)=>a+gross(y),0);
+  const meta = y => [payRef(y), partsSum(y) ? `כבר שולמו ${money(partsSum(y))}` : "", y.due ? "עד " + dm(y.due) : ""].filter(Boolean).map(esc).join(" · ");
+  const due1 = y => `<div class="pt-due"><div><span>לתשלום · ${esc(title(y))}</span><small>${meta(y)}</small></div><div class="pt-due-a"><b>${money(leftOf(y))}</b>${payPill(y)}</div></div>`;
+  const openRow = y => `<div class="pt-row"><div class="pt-d"><b>${esc(title(y))}</b><span>${meta(y)}</span></div><div class="pt-a"><b>${money(leftOf(y))}</b></div>${payPill(y)}</div>`;
+  const doneRow = y => `<div class="pt-row"><div class="pt-d"><b>${esc(title(y))}</b><span>${[payRef(y), y.paidOn ? "שולם ב־" + dm(y.paidOn) : ""].filter(Boolean).map(esc).join(" · ")}</span></div><div class="pt-a"><b>${money(gross(y))}</b></div></div>`;
+  return `<section class="pt-pay"><h2>תשלומים</h2>
+    ${open.length === 1 ? due1(open[0]) : open.length ? `<div class="pt-due"><div><span>נותר לתשלום</span><small>${open.length} דרישות תשלום</small></div><b>${money(left)}</b></div><div class="pt-list">${open.map(openRow).join("")}</div>` : ""}
+    ${done.length ? `<details class="paid-fold ${open.length ? "" : "all"}"><summary>✓ ${open.length ? "שולם עד היום" : "הכול שולם"} · ${money(paidDone)}</summary><div class="pt-list">${done.map(doneRow).join("")}</div></details>` : ""}
+    <p class="pt-vat">הסכומים כוללים מע״מ</p>
+  </section>`;
+}
+function adBlock(p){
+  const ad = p.ad; if (!ad || !ad.img) return "";
+  const ok = ad.status === "approved";
+  return `<section class="pt-ad"><img src="${ad.img}" alt="המודעה">
+    <div class="pt-ad-t"><span class="pt-ad-st ${ok?"ok":""}">${ok ? "✓ אושרה" : "● ממתינה לאישורך"}</span><h3>המודעה שלך</h3>
+    <p>${ok ? "המודעה אושרה ועוברת להכנה לדפוס." : `המודעה נשלחה אלייך במייל${ad.sentOn ? " ב־" + dm(ad.sentOn) : ""}. אחרי ההערות שלך נעבור לשלב הדיוקים.`}</p>${chatBlock(p)}</div></section>`;
+}
+const c = DATA.client, ps = DATA.projects, pays = DATA.payments;
+const paid = pays.reduce((a,p)=>a+paidOf(p),0), due = pays.reduce((a,p)=>a+leftOf(p),0);
+const logo = c.logo ? `<img class="av xl" src="${esc(c.logo)}" alt="">` : `<span class="av xl" aria-hidden="true">${esc((c.name||"?").trim().charAt(0))}</span>`;
+document.getElementById("root").innerHTML = `<div class="pt">
+  <div class="pt-brand" role="img" aria-label="חוי סטודיו · עיצוב גרפי"><svg viewBox="0 0 2000 290" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="#F6F3EF" stroke-linecap="round" stroke-width="118"><path d="M230 -40 L360 150"/><path d="M740 -40 L955 300 L1140 -40"/><path d="M1515 -40 L1350 310"/><path d="M1800 -40 L1985 300"/></g></svg><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAACDCAYAAAApiRZJAAAEwUlEQVR42u3d0XEbMQxFUWJH/aWLlJD2kQI88jgT7RIgzv31h7Eg+PBASqv48/vXKkiutWLz//8XYqFqHXVZx5xcS6/CxZKNNnwSqHais7sB/rTugxDVK5xuXSMJUnnxeXrTpxr6ytW0gPLm+OKG5026MTqf/xvz0TV0Ne5idy9M2EAjXNATbigbPP8oIcpGhdlxM3FBZ4vQsfVz2XxHFSgXJCeEyKLYYA1zpNkMEqJczg4U66zcpPzUEiIbTY4mjt5qZ+Bo1t0VESNuyGhmQXyNY+BGDvniiCyKTuo2FI8IUSpgaCTytlOIUjETcM0Ek0czB9fWbGrsSYhmbSJd1QE1QeSIdFg4oDaaWRCuSN3IJ0fEFYEb4ogsCFekbqrHnhOFKBWM2DULGM1c51sTsbfN72WT6Lqu6+WZI7IoBN8BtdHMgui+RFW+OwuR17OKnRuC0YwrIqZiPyP2a2hXUFCaATiio6/EXedrAJ7hASHSkXVleb8n9rFN7Cr82Q/O4qzY/T6ZxtX2sLp7hwPBN9p/WIhO/SSsTWIkqxZ7cET1isnBtS8ci/3wZ7ssCLihkrEHR1SvmLiino2CG/KMHxOi1PmWg2t53RH7mCZ2eVWDDr5ceS/X9UYzHZDlF/twV3RxQzYRUS8fe3BEvocmdkLOxW4SoupuyIi2HFAPiz2mOSLvEtbZlwNqruj00Sx0Rq6IkzPafydEaUNzRdyQxnOyI7rrfStdFzlYerFzRV+FKBsnz9nBOvrcwxh+uMO6DiqiO99w5zqfUC8H1/cLUTZ+9WWV/6u7yc+TsR81ol03/LMqQvDpOHR+B9QoPppFYSdSOTau6NyxI5aD6x/zGrYJYvjmC27ouDqLE9ydX3olksZUbM8ZIVJQRLl/7MERYdrMzw1pYoSIGHl+sZ93cE2IdDfX9TCagStyXc8VESKb03X9WbEHRwS/buKAWhMjRGi6Sbmh4fkkRIo8FzeEzbklRMTI850Ze6uDa0KE7wrKdb2bTaMZFL2RbIYrIkR4V1AcxRmxB0eErt3NATUezTkhIkae4/zYgyMCR+H7ZOqGEHFFNoLcVz+4JkQgohqA0Qw2hZGMKyJEIJ6zhD84Itgc3JA1IUTESJwEv+IzESIs1/XYvTaEyEY3ks3MbamDa0IEG5nAG81g0xjJuCJCBOI4W9iDI4LNww1ZM0JEjIiis6EKz0yI4Loe210RISIERjI3ZdsPrgkRbGQitD0HhEhBcUPYvpaECMSPG9qeC0KkoLghbF9TQkSMKv8fB9RDmhghgpEMO3KThEhBGcmIUCkxIkQKauJmJkLFckWIFNS0T1AToYJrTYgU1KRfOyVCRfNHiIhR6UNMAjRCkPIlr6PFKE/5pVAjWIsaegshUkzfiUBsiCcJT2uHnYQI3mWEluvnjAjA8mI0AIRICgAQIgCESAoAECIAhEgKABAiAIRICgAQIgCESAoAECIAhEgKABAiAIRICgAQIgCESAoA7MYbGpffIF/ekFj9Z7HX6W+6JEQ2z7u/ESQYzbC9g6dUgRChwhhBjECIABAiOFTlikCIABAiACBEAAgRABAirAqftPXBRhAiAIQIs10RNwRChK1iRISwfOkVT4iRb9+jBH8Bfh4nQonvPRcAAAAASUVORK5CYII=" alt="AVA"></div>
+  <header class="pt-head">${logo}<div><div class="pt-eyebrow">${DATA.studio?esc(DATA.studio)+" · ":""}עודכן ב־${dm(DATA.updated)}</div><h1>שלום ${esc(c.contact||c.name)}</h1><p>כאן רואים בכל רגע איפה העבודה שלך עומדת ומה מצב התשלומים.</p></div></header>
+  ${projList(ps, p => p._done, p => projCard(p, pays.filter(y=>y.projectId===p.id), progressBlock(p) + (p.ad && p.ad.img ? adBlock(p) : chatBlock(p)), p._done))}
+  ${chatCard()}
+    ${payBlock(ps, pays)}
+  <p class="pt-foot">הסכומים כוללים מע״מ ${vat}% אלא אם צוין אחרת. הדף מתעדכן לאורך העבודה, אפשר לשמור את הלינק.</p></div>`;
+chatInit();
+/* lets the studio see that the page is open right now (no personal data, only the time); Chavi's own visits are never counted */
+if (!ME) {
+  post({action: "ping", key: KEY, opened: true}).catch(() => {});
+  const alive = () => { if (document.visibilityState === "visible") post({action: "ping", key: KEY}).catch(() => {}); };
+  setInterval(alive, 30000); document.addEventListener("visibilitychange", alive);
+}
+})();
+</script>
+</body></html>
