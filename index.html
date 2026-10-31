@@ -311,6 +311,7 @@ img.av{background:#fff;object-fit:cover}
 .ch-tgb[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
 .ch-tgb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ch-tgb img,.ch-tgp{width:30px;height:38px;object-fit:cover;border-radius:5px;flex:none;background:var(--surface-2);display:block}
+.pg-final{font-size:12.5px;font-weight:600;color:inherit;white-space:nowrap}
 
 </style>
 </head><body>
@@ -365,7 +366,7 @@ function progressBlock(p){
     <div class="pg-pct"><b>${pc}%</b><span>${done} מתוך ${n} שלבים</span></div><div class="pg-bar"><i style="width:${pc}%"></i></div></div>
     <ol class="pg-steps">${p.stages.map((s,i)=>{ const d = sDone(s), c = p.stages.some(x => x.sent) ? !!s.sent : i===ci;
       return `<li class="${d?"done":c?"cur":""}"><span class="dot">${d?I_CHECK:c?I_PIN:i+1}</span><span class="nm">${/ · /.test(s.name) ? `<small>${esc(s.name.split(" · ")[0])}</small>${esc(s.name.split(" · ").slice(1).join(" · "))}` : esc(s.name)}</span>
-        <span class="dt">${d ? (s.doneOn?"הושלם · "+dm(s.doneOn):"הושלם") : s.due ? "יעד · "+dm(s.due) : ""}</span>${c?`<span class="here">${(p.waiting||[]).length?"מחכים לך":"אנחנו כאן"}</span>`:""}</li>`; }).join("")}</ol></section>`;
+        <span class="dt">${d ? (s.doneOn?"הושלם · "+dm(s.doneOn):"הושלם") : s.due ? "יעד · "+dm(s.due) : ""}</span>${d && s.finalUrl ? `<a class="pg-final" href="${esc(s.finalUrl)}" target="_blank" rel="noopener">📁 קובץ סופי</a>` : ""}${c?`<span class="here">${(p.waiting||[]).length?"מחכים לך":"אנחנו כאן"}</span>`:""}</li>`; }).join("")}</ol></section>`;
 }
 
 /* open the chat while the work waits for the client's notes: the revisions stage, or right after the ad was sent */
