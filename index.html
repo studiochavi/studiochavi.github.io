@@ -394,9 +394,10 @@ const chatTargets = () => { const o = openPs(), out = [];
   o.forEach(p => { const ads = adsOf(p).filter(a => !adDone(p, a));
     if (ads.length) ads.forEach(a => out.push({pid: p.id, tag: a.label || p.title, a}));
     else out.push({pid: p.id, tag: p.title, a: null}); });
-  return out; };
+  /* once ads were sent, those are the choices: a project with nothing sent yet is not offered next to them */
+  return out.some(t => t.a) ? out.filter(t => t.a) : out; };
 let CHT = -1;   // the chosen target; -1 = all of them
-const chatPid = () => { const t = chatTargets()[CHT]; return t ? t.pid : defPid(); };
+const chatPid = () => { const l = chatTargets(), t = l[CHT] || l[0]; return t ? t.pid : defPid(); };
 const chatTag = () => { const l = chatTargets(); return l.length < 2 ? "" : l[CHT] ? l[CHT].tag : "כל המודעות"; };
 const ptitle = id => (ps.find(p => p.id === id) || {}).title || "";
 const mine = n => (n.from === "studio") === ME;   // this side of the chat
@@ -433,7 +434,7 @@ function chatBlock(p){
   return `<a class="ch-jump" href="#chat" data-pid="${esc(p.id)}">✎ יש הערות או תיקונים? כתבי או הקליטי לי בצ׳אט ↓</a>`;
 }
 /* the ads she sent, side by side: pictures come from Drive through the script. An ad sent before this page keeps its picture inside the data */
-const adsOf = p => [...(p.ads || []), ...(p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [])];
+const adsOf = p => (p.ads || []).length ? p.ads : p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [];   // an older single picture gives way once ads were sent the new way
 const adDone = (p, a) => a.status === "approved" || (p.adStates && p.adStates[a.key]) === "approved";
 function adsBlock(p){
   const all = adsOf(p); if (!all.length) return chatBlock(p);
