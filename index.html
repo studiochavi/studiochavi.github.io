@@ -303,6 +303,14 @@ img.av{background:#fff;object-fit:cover}
 .pa-grid.closed{margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));align-items:start}
 .pa-fold-in{display:flex;flex-direction:column;gap:12px;margin-top:12px}
 .pt-past.pa-fold{border-top:0;padding-top:0}
+/* what the message is about */
+.ch-tg{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:12px 16px 0}
+.ch-tg[hidden]{display:none}
+.ch-tgl{font-size:13.5px;color:var(--muted);flex-basis:100%}
+.ch-tgb{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;padding:5px 14px 5px 8px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:14px}
+.ch-tgb[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);font-weight:600}
+.ch-tgb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ch-tgb img,.ch-tgp{width:30px;height:38px;object-fit:cover;border-radius:5px;flex:none;background:var(--surface-2);display:block}
 
 </style>
 </head><body>
@@ -381,7 +389,15 @@ const I_PLAY = SVG('<path d="M8 5.5v13l10.5-6.5z"/>', 18);
 
 const openPs = () => ps.filter(p => !p._done);
 const defPid = () => { const o = openPs(); return (o.find(wantsNotes) || o[0] || ps[0] || {}).id || ""; };
-const chatPid = () => { const s = document.getElementById("ch-pid"); return s ? s.value : defPid(); };
+/* what a message can be about: every ad still open, or a project with no ad yet, and "all of them" when there is more than one */
+const chatTargets = () => { const o = openPs(), out = [];
+  o.forEach(p => { const ads = adsOf(p).filter(a => !adDone(p, a));
+    if (ads.length) ads.forEach(a => out.push({pid: p.id, tag: a.label || p.title, a}));
+    else out.push({pid: p.id, tag: p.title, a: null}); });
+  return out; };
+let CHT = -1;   // the chosen target; -1 = all of them
+const chatPid = () => { const t = chatTargets()[CHT]; return t ? t.pid : defPid(); };
+const chatTag = () => { const l = chatTargets(); return l.length < 2 ? "" : l[CHT] ? l[CHT].tag : "כל המודעות"; };
 const ptitle = id => (ps.find(p => p.id === id) || {}).title || "";
 const mine = n => (n.from === "studio") === ME;   // this side of the chat
 
@@ -419,7 +435,6 @@ function chatBlock(p){
 /* the ads she sent, side by side: pictures come from Drive through the script. An ad sent before this page keeps its picture inside the data */
 const adsOf = p => [...(p.ads || []), ...(p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [])];
 const adDone = (p, a) => a.status === "approved" || (p.adStates && p.adStates[a.key]) === "approved";
-const adLabels = pid => { const p = ps.find(x => x.id === pid) || {}; return adsOf(p).filter(a => !adDone(p, a)).map(a => a.label).filter(Boolean); };
 function adsBlock(p){
   const all = adsOf(p); if (!all.length) return chatBlock(p);
   /* ads already closed wait below under one arrow; a finished project is already folded, so it shows them all */
@@ -435,14 +450,14 @@ function adsBlock(p){
 function loadAdImgs(){
   document.querySelectorAll("[data-adimg]").forEach(el => media(el.dataset.adimg).then(u => { el.href = u; el.classList.remove("pa-wait"); el.innerHTML = `<img src="${u}" alt="${esc(el.getAttribute("aria-label") || "המודעה")}">`; }).catch(() => { el.querySelector("span").textContent = "התמונה לא נטענה. נסי לרענן."; }));
 }
-const adSelHtml = pid => { const l = adLabels(pid); return l.length > 1 ? `<option value="">כל המודעות</option>${l.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("")}` : ""; };
-function drawAdSel(){ const w = document.getElementById("ch-adl"), s = document.getElementById("ch-ad"); if (!w) return; s.innerHTML = adSelHtml(chatPid()); w.hidden = !s.innerHTML; }
+function drawTargets(){ const el = document.getElementById("ch-tg"); if (!el) return; const l = chatTargets(); el.hidden = l.length < 2; if (l.length < 2) { el.innerHTML = ""; return; }
+  const btn = (i, label, pic) => `<button type="button" class="ch-tgb" data-tg="${i}" aria-pressed="${CHT === i}">${pic}<span>${esc(label)}</span></button>`;
+  el.innerHTML = `<span class="ch-tgl">על מה ההודעה?</span>` + btn(-1, "כל המודעות", "") + l.map((t, i) => btn(i, t.tag, t.a ? (t.a.img ? `<img src="${t.a.img}" alt="">` : `<span class="ch-tgp" data-tgimg="${esc(t.a.fid)}"></span>`) : "")).join("");
+  el.querySelectorAll("[data-tgimg]").forEach(sp => media(sp.dataset.tgimg).then(u => { sp.outerHTML = `<img src="${u}" alt="">`; }).catch(() => {})); }
 function chatCard(){
-  const o = openPs(), d = defPid();
   return `<section class="pt-chat" id="chat"><div class="ch-head"><h2>צ׳אט עם ${ME ? esc(c.contact || c.name) : esc(DATA.studio || "חוי")}</h2>${ME ? `<span class="pill warn">מצב סטודיו · הלקוח רואה את מה שתשלחי</span>` : ""}</div>
     <div class="ch-log" id="ch-log" aria-live="polite">${logHtml()}</div>
-    ${o.length > 1 ? `<label class="ch-pidl">לגבי <select id="ch-pid">${o.map(p => `<option value="${esc(p.id)}"${p.id === d ? " selected" : ""}>${esc(p.title)}</option>`).join("")}</select></label>` : ""}
-    <label class="ch-pidl" id="ch-adl" hidden>על איזו מודעה <select id="ch-ad"></select></label>
+    <div class="ch-tg" id="ch-tg" role="group" aria-label="על מה ההודעה" hidden></div>
     <div class="ch-att" id="ch-att" hidden></div>
     <div class="ch-comp" id="ch-comp">
       <label class="ch-ic" title="צירוף תמונה או קובץ"><input type="file" id="ch-file" accept="image/*,application/pdf,audio/*" hidden>${I_CLIP}<span class="sr">צירוף תמונה או קובץ</span></label>
@@ -485,7 +500,7 @@ async function send(){
   if (!t && !ATT) { ta.focus(); return; }
   btn.disabled = true; if (btn2) btn2.disabled = true; note(ATT ? "שולחת… (קובץ או הקלטה לוקחים כמה שניות)" : "");
   try {
-    const o = {action: "msg", key: KEY, pid: chatPid(), t, ad: (document.getElementById("ch-ad") || {}).value || ""};
+    const o = {action: "msg", key: KEY, pid: chatPid(), t, ad: chatTag()};
     if (VK) o.v = VK;
     if (ATT) o.f = {b64: await b64(ATT.blob), mime: ATT.mime, name: ATT.name, dur: ATT.dur};
     const r = await post(o);
@@ -519,8 +534,7 @@ async function recStart(){
 function recStop(cancel){ if (!REC) return; REC.cancel = cancel; REC.mr.stop(); }
 
 function chatInit(){
-  drawLog(true); drawAdSel(); loadAdImgs();
-  document.addEventListener("change", e => { if (e.target.id === "ch-pid") drawAdSel(); });
+  drawLog(true); drawTargets(); loadAdImgs();
   const ta = document.getElementById("ch-ta");
   const grow = () => { ta.style.height = ""; ta.style.height = Math.min(160, ta.scrollHeight + 2) + "px"; };
   ta.addEventListener("input", grow);
@@ -535,7 +549,8 @@ function chatInit(){
     if (t.id === "ch-rs") return recStop(false);
     if (t.id === "ch-rx") return recStop(true);
     if (t.id === "ch-ax") { setAtt(null); return; }
-    if (t.classList.contains("ch-jump")) { const s = document.getElementById("ch-pid"); if (s) s.value = t.dataset.pid; drawAdSel(); const as = document.getElementById("ch-ad"); if (as) as.value = t.dataset.ad || ""; setTimeout(() => ta.focus({preventScroll: true}), 400); return; }
+    if (t.dataset.tg !== undefined) { CHT = +t.dataset.tg; drawTargets(); return; }
+    if (t.classList.contains("ch-jump")) { const l = chatTargets(), own = l.map((x, i) => [x, i]).filter(([x]) => x.pid === t.dataset.pid), hit = own.find(([x]) => x.tag === t.dataset.ad) || (own.length === 1 ? own[0] : null); CHT = hit ? hit[1] : -1; drawTargets(); setTimeout(() => ta.focus({preventScroll: true}), 400); return; }
     if (t.classList.contains("ch-play")) { t.disabled = true; t.querySelector("span").textContent = "טוען…";
       try { const u = await media(t.dataset.fid), a = document.createElement("audio"); a.controls = true; a.src = u; t.replaceWith(a); a.play().catch(() => {}); }
       catch { t.disabled = false; t.querySelector("span").textContent = "לא נטען, נסי שוב"; } return; }
