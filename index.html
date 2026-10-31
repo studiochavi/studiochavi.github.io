@@ -423,7 +423,7 @@ function bubble(n){
   const proj = ps.length > 1 && n.pid && ptitle(n.pid) ? esc(ptitle(n.pid)) + " · " : "";
   const read = me ? (n.readAt ? ` · <span class="ch-read">✓ נקרא</span>` : " · נשלח") : "";
   return `<div class="ch-m ${me ? "me" : "them"}"><div class="ch-b">${n.f ? fileHtml(n.f) : ""}${n.ad ? `<span class="ch-tag">${esc(n.ad)}</span>` : ""}${n.t ? `<div class="ch-t">${linkify(esc(n.t))}</div>` : ""}${n.tr ? `<div class="ch-tr"><span>תמלול אוטומטי, רק את רואה</span>${esc(n.tr)}</div>` : ""}
-    <small>${me ? "" : esc(who) + " · "}${proj}${when(n.at)}${read}</small></div></div>`;
+    <small>${n.who ? esc(n.who) + " · " : me ? "" : esc(who) + " · "}${proj}${when(n.at)}${read}</small></div></div>`;
 }
 const logHtml = () => NOTES.length ? NOTES.map(bubble).join("")
   : `<p class="ch-empty">${ME ? "עוד אין הודעות עם הלקוח." : "עוד אין הודעות. אפשר לכתוב לי כאן כל שאלה או הערה, להקליט הודעה קולית 🎤 או לצרף תמונה וצילום מסך."}</p>`;
@@ -451,6 +451,11 @@ function adsBlock(p){
 function loadAdImgs(){
   document.querySelectorAll("[data-adimg]").forEach(el => media(el.dataset.adimg).then(u => { el.href = u; el.classList.remove("pa-wait"); el.innerHTML = `<img src="${u}" alt="${esc(el.getAttribute("aria-label") || "המודעה")}">`; }).catch(() => { el.querySelector("span").textContent = "התמונה לא נטענה. נסי לרענן."; }));
 }
+/* several people share one link: each message says who wrote it; this browser remembers the name */
+const WHO_KEY = "ava-who-" + KEY, people = () => ME ? [] : ((DATA.client || {}).people || []);
+let CHW = ""; try { CHW = localStorage.getItem(WHO_KEY) || ""; } catch {}
+function drawWho(){ const el = document.getElementById("ch-who"); if (!el) return; const l = people(); el.hidden = l.length < 2; if (l.length < 2) return; if (!l.includes(CHW)) CHW = "";
+  el.innerHTML = `<span class="ch-tgl">מי כותבת?</span>` + l.map(n => `<button type="button" class="ch-tgb" data-who="${esc(n)}" aria-pressed="${CHW === n}"><span>${esc(n)}</span></button>`).join(""); }
 function drawTargets(){ const el = document.getElementById("ch-tg"); if (!el) return; const l = chatTargets(); el.hidden = l.length < 2; if (l.length < 2) { el.innerHTML = ""; return; }
   const btn = (i, label, pic) => `<button type="button" class="ch-tgb" data-tg="${i}" aria-pressed="${CHT === i}">${pic}<span>${esc(label)}</span></button>`;
   el.innerHTML = `<span class="ch-tgl">על מה ההודעה?</span>` + btn(-1, "כל המודעות", "") + l.map((t, i) => btn(i, t.tag, t.a ? (t.a.img ? `<img src="${t.a.img}" alt="">` : `<span class="ch-tgp" data-tgimg="${esc(t.a.fid)}"></span>`) : "")).join("");
@@ -458,6 +463,7 @@ function drawTargets(){ const el = document.getElementById("ch-tg"); if (!el) re
 function chatCard(){
   return `<section class="pt-chat" id="chat"><div class="ch-head"><h2>צ׳אט עם ${ME ? esc(c.contact || c.name) : esc(DATA.studio || "חוי")}</h2>${ME ? `<span class="pill warn">מצב סטודיו · הלקוח רואה את מה שתשלחי</span>` : ""}</div>
     <div class="ch-log" id="ch-log" aria-live="polite">${logHtml()}</div>
+    <div class="ch-tg" id="ch-who" role="group" aria-label="מי כותבת" hidden></div>
     <div class="ch-tg" id="ch-tg" role="group" aria-label="על מה ההודעה" hidden></div>
     <div class="ch-att" id="ch-att" hidden></div>
     <div class="ch-comp" id="ch-comp">
@@ -499,9 +505,10 @@ const b64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onlo
 async function send(){
   const ta = document.getElementById("ch-ta"), btn = document.getElementById("ch-send"), btn2 = document.getElementById("ch-send2"), t = ta.value.trim();
   if (!t && !ATT) { ta.focus(); return; }
+  if (people().length > 1 && !CHW) { note("בחרי קודם מי כותבת, כדי שאדע ממי ההודעה.", true); document.getElementById("ch-who").scrollIntoView({block: "nearest"}); return; }
   btn.disabled = true; if (btn2) btn2.disabled = true; note(ATT ? "שולחת… (קובץ או הקלטה לוקחים כמה שניות)" : "");
   try {
-    const o = {action: "msg", key: KEY, pid: chatPid(), t, ad: chatTag()};
+    const o = {action: "msg", key: KEY, pid: chatPid(), t, ad: chatTag(), who: CHW};
     if (VK) o.v = VK;
     if (ATT) o.f = {b64: await b64(ATT.blob), mime: ATT.mime, name: ATT.name, dur: ATT.dur};
     const r = await post(o);
@@ -535,7 +542,7 @@ async function recStart(){
 function recStop(cancel){ if (!REC) return; REC.cancel = cancel; REC.mr.stop(); }
 
 function chatInit(){
-  drawLog(true); drawTargets(); loadAdImgs();
+  drawLog(true); drawWho(); drawTargets(); loadAdImgs();
   const ta = document.getElementById("ch-ta");
   const grow = () => { ta.style.height = ""; ta.style.height = Math.min(160, ta.scrollHeight + 2) + "px"; };
   ta.addEventListener("input", grow);
@@ -550,6 +557,7 @@ function chatInit(){
     if (t.id === "ch-rs") return recStop(false);
     if (t.id === "ch-rx") return recStop(true);
     if (t.id === "ch-ax") { setAtt(null); return; }
+    if (t.dataset.who !== undefined) { CHW = t.dataset.who; try { localStorage.setItem(WHO_KEY, CHW); } catch {} drawWho(); note(""); return; }
     if (t.dataset.tg !== undefined) { CHT = +t.dataset.tg; drawTargets(); return; }
     if (t.classList.contains("ch-jump")) { const l = chatTargets(), own = l.map((x, i) => [x, i]).filter(([x]) => x.pid === t.dataset.pid), hit = own.find(([x]) => x.tag === t.dataset.ad) || (own.length === 1 ? own[0] : null); CHT = hit ? hit[1] : -1; drawTargets(); setTimeout(() => ta.focus({preventScroll: true}), 400); return; }
     if (t.classList.contains("ch-play")) { t.disabled = true; t.querySelector("span").textContent = "טוען…";
