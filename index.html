@@ -293,6 +293,16 @@ img.av{background:#fff;object-fit:cover}
 .pa-all{margin:0;color:var(--muted);font-size:14px}
 .ch-tag{align-self:flex-start;font-size:12px;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:1px 10px}
 .ch-pidl[hidden]{display:none}
+/* what is closed stays one click away: a line with an arrow */
+.pa-fold{border-top:1px solid var(--line);padding-top:12px}
+.pa-fold>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;font-weight:600;font-size:15.5px;color:var(--muted);padding:4px 0}
+.pa-fold>summary::-webkit-details-marker{display:none}
+.pa-fold>summary::before{content:"‹";font-size:20px;line-height:1;width:14px;text-align:center;transition:transform .15s}
+.pa-fold[open]>summary::before{transform:rotate(-90deg)}
+.pa-fold>summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:8px}
+.pa-grid.closed{margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));align-items:start}
+.pa-fold-in{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.pt-past.pa-fold{border-top:0;padding-top:0}
 
 </style>
 </head><body>
@@ -409,15 +419,18 @@ function chatBlock(p){
 /* the ads she sent, side by side: pictures come from Drive through the script. An ad sent before this page keeps its picture inside the data */
 const adsOf = p => [...(p.ads || []), ...(p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [])];
 const adDone = (p, a) => a.status === "approved" || (p.adStates && p.adStates[a.key]) === "approved";
-const adLabels = pid => adsOf(ps.find(x => x.id === pid) || {}).map(a => a.label).filter(Boolean);
+const adLabels = pid => { const p = ps.find(x => x.id === pid) || {}; return adsOf(p).filter(a => !adDone(p, a)).map(a => a.label).filter(Boolean); };
 function adsBlock(p){
-  const list = adsOf(p); if (!list.length) return chatBlock(p);
-  const many = list.length > 1;
-  return `<section class="pa ${many ? "many" : ""}"><div class="pa-grid">${list.map(a => `<figure class="pa-fig">
+  const all = adsOf(p); if (!all.length) return chatBlock(p);
+  /* ads already closed wait below under one arrow; a finished project is already folded, so it shows them all */
+  const closed = p._done ? [] : all.filter(a => adDone(p, a)), list = all.filter(a => !closed.includes(a)), many = list.length > 1;
+  const fig = a => `<figure class="pa-fig">
       ${a.img ? `<a href="${a.img}" target="_blank" rel="noopener"><img src="${a.img}" alt="${esc(a.label || "המודעה")}"></a>` : `<a class="pa-wait" data-adimg="${esc(a.fid)}" target="_blank" rel="noopener" aria-label="${esc(a.label || "המודעה")}"><span>טוען…</span></a>`}
       <figcaption>${a.label ? `<b>${esc(a.label)}</b>` : ""}<span class="pt-ad-st ${adDone(p, a) ? "ok" : ""}">${adDone(p, a) ? "✓ אושרה" : "● ממתינה לאישורך"}</span>${a.sentOn ? `<small>נשלחה ב־${dm(a.sentOn)}</small>` : ""}
-      ${!ME && a.label && !adDone(p, a) ? `<a class="ch-jump pa-note" href="#chat" data-pid="${esc(p.id)}" data-ad="${esc(a.label)}">✎ הערות על המודעה הזו</a>` : ""}</figcaption></figure>`).join("")}</div>
-    ${many ? `<p class="pa-all">אפשר לכתוב לי הערה על מודעה אחת, או על כולן יחד.</p>` : ""}${chatBlock(p)}</section>`;
+      ${!ME && a.label && !adDone(p, a) ? `<a class="ch-jump pa-note" href="#chat" data-pid="${esc(p.id)}" data-ad="${esc(a.label)}">✎ הערות על המודעה הזו</a>` : ""}</figcaption></figure>`;
+  return `<section class="pa ${many ? "many" : ""}">${list.length ? `<div class="pa-grid">${list.map(fig).join("")}</div>` : ""}
+    ${many ? `<p class="pa-all">אפשר לכתוב לי הערה על מודעה אחת, או על כולן יחד.</p>` : ""}${chatBlock(p)}
+    ${closed.length ? `<details class="pa-fold"><summary>מודעות שנסגרו · ${closed.length}</summary><div class="pa-grid closed">${closed.map(fig).join("")}</div></details>` : ""}</section>`;
 }
 function loadAdImgs(){
   document.querySelectorAll("[data-adimg]").forEach(el => media(el.dataset.adimg).then(u => { el.href = u; el.classList.remove("pa-wait"); el.innerHTML = `<img src="${u}" alt="${esc(el.getAttribute("aria-label") || "המודעה")}">`; }).catch(() => { el.querySelector("span").textContent = "התמונה לא נטענה. נסי לרענן."; }));
@@ -556,7 +569,7 @@ function projList(ps, isDone, card){
   if (!ps.length) return `<p class="pt-empty">אין עבודות כרגע.</p>`;
   const now = ps.filter(p => !isDone(p)), past = ps.filter(isDone);
   return (now.length ? `<section class="pt-now"><h2 class="pt-sec">בעבודה עכשיו</h2>${now.map(card).join("")}</section>` : "")
-    + (past.length ? `<section class="pt-past"><h2 class="pt-sec">עבודות שהסתיימו</h2>${past.map(card).join("")}</section>` : "");
+    + (past.length ? `<details class="pa-fold pt-past"><summary>עבודות שהסתיימו · ${past.length}</summary><div class="pa-fold-in">${past.map(card).join("")}</div></details>` : "");
 }
 /* all the money in one card, each sum shown once:
    open → one strong line per open request (or one big line when there is only one), plus the total when there are several;
