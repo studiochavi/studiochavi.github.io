@@ -245,9 +245,12 @@ img.av{background:#fff;object-fit:cover}
 .ch-play:focus-visible,.ch-filebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ch-pidl{display:flex;align-items:center;gap:8px;padding:10px 16px 0;font-size:13.5px;color:var(--muted)}
 .ch-pidl select{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px 8px}
-.ch-att{display:flex;align-items:center;gap:10px;padding:10px 16px 0;flex-wrap:wrap}
+.ch-att{display:flex;align-items:center;gap:8px;padding:10px 16px 0;flex-wrap:wrap}
 .ch-att img{max-height:84px;border-radius:10px;border:1px solid var(--line)}
 .ch-att audio{height:38px;max-width:100%}
+.ch-att .ch-send{width:42px;height:42px}
+.ch-del{all:unset;cursor:pointer;flex:none;width:34px;height:34px;display:inline-grid;place-items:center;border-radius:50%;background:var(--bad);color:#fff;font-size:15px;font-weight:600;line-height:1}
+.ch-del:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .ch-att[hidden],.ch-comp[hidden],.ch-rec[hidden]{display:none}
 .ch-comp{display:flex;align-items:flex-end;gap:6px;padding:12px}
 .ch-comp textarea{flex:1;min-width:0;min-height:46px;max-height:160px;resize:none;border:1px solid var(--line);border-radius:22px;padding:11px 16px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;line-height:1.45}
@@ -409,8 +412,9 @@ function showAtt(){
   const el = document.getElementById("ch-att"); if (!el) return;
   if (!ATT) { el.hidden = true; el.innerHTML = ""; return; }
   el.hidden = false;
-  el.innerHTML = (ATT.mime.startsWith("audio/") ? `<audio controls src="${ATT.url}"></audio>` : ATT.mime.startsWith("image/") ? `<img src="${ATT.url}" alt="">` : `<span>📎 ${esc(ATT.name)}</span>`)
-    + `<button type="button" class="ch-x" id="ch-ax">הסרה</button>`;
+  el.innerHTML = `<button type="button" class="ch-del" id="ch-ax" title="הסרה" aria-label="הסרה">✕</button>`
+    + (ATT.mime.startsWith("audio/") ? `<audio controls src="${ATT.url}"></audio>` : ATT.mime.startsWith("image/") ? `<img src="${ATT.url}" alt="">` : `<span>📎 ${esc(ATT.name)}</span>`)
+    + `<button type="button" class="ch-send" id="ch-send2" aria-label="שליחה" title="שליחה">${I_SEND}</button>`;
 }
 function setAtt(blob, name, d){
   if (ATT) URL.revokeObjectURL(ATT.url);
@@ -428,9 +432,9 @@ function drawLog(force){
 }
 const b64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(blob); });
 async function send(){
-  const ta = document.getElementById("ch-ta"), btn = document.getElementById("ch-send"), t = ta.value.trim();
+  const ta = document.getElementById("ch-ta"), btn = document.getElementById("ch-send"), btn2 = document.getElementById("ch-send2"), t = ta.value.trim();
   if (!t && !ATT) { ta.focus(); return; }
-  btn.disabled = true; note(ATT ? "שולחת… (קובץ או הקלטה לוקחים כמה שניות)" : "");
+  btn.disabled = true; if (btn2) btn2.disabled = true; note(ATT ? "שולחת… (קובץ או הקלטה לוקחים כמה שניות)" : "");
   try {
     const o = {action: "msg", key: KEY, pid: chatPid(), t};
     if (VK) o.v = VK;
@@ -442,7 +446,7 @@ async function send(){
     note(ME ? "✓ נשלח. הלקוח יראה את זה כשייכנס לפורטל." : "✓ נשלח. ההודעה הגיעה אליי, אחזור אלייך בהקדם.");
   } catch (e) {
     note(String(e.message) === "too big" ? "הקובץ גדול מדי. אפשר לשלוח אותו במייל." : String(e.message) === "too many" ? "נשלחו הרבה הודעות בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. בדקי את החיבור ונסי שוב.", true);
-  } finally { btn.disabled = false; }
+  } finally { btn.disabled = false; if (btn2) btn2.disabled = false; }
 }
 
 /* voice: the browser records in its own format (webm in Chrome and Android, mp4 on iPhone); up to 5 minutes */
@@ -459,7 +463,6 @@ async function recStart(){
     document.getElementById("ch-rec").hidden = true; document.getElementById("ch-comp").hidden = false;
     if (r.cancel || !parts.length) return;
     setAtt(new Blob(parts, {type: (mr.mimeType || type || "audio/webm").split(";")[0]}), "", Math.round((Date.now() - r.t0) / 1000));
-    note("האזיני אם תרצי, ולחצי על כפתור השליחה.");
   };
   mr.start(1000);
   document.getElementById("ch-comp").hidden = true; document.getElementById("ch-rec").hidden = false; note("");
@@ -477,7 +480,7 @@ function chatInit(){
   document.getElementById("ch-file").addEventListener("change", e => { const f = e.target.files[0]; if (f) setAtt(f, f.name); e.target.value = ""; });
   document.addEventListener("click", async e => {
     const t = e.target.closest("button, a.ch-jump"); if (!t) return;
-    if (t.id === "ch-send") return send();
+    if (t.id === "ch-send" || t.id === "ch-send2") return send();
     if (t.id === "ch-mic") return recStart();
     if (t.id === "ch-rs") return recStop(false);
     if (t.id === "ch-rx") return recStop(true);
