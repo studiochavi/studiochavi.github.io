@@ -363,7 +363,7 @@ function progressBlock(p){
   const sub = [p.size, p.outlet && "ב־"+p.outlet, p.deadline && "מסירה "+dm(p.deadline)].filter(Boolean).map(esc).join(" · ");
   return `<section class="pg"><div class="pg-top"><div class="pg-ttl">${p.cover ? `<img class="pj-cover" src="${esc(p.cover)}" alt="">` : ""}<div><div class="pg-eyebrow">${esc(p.title)}</div><div class="pg-sub">${sub}</div></div></div>
     <div class="pg-pct"><b>${pc}%</b><span>${done} מתוך ${n} שלבים</span></div><div class="pg-bar"><i style="width:${pc}%"></i></div></div>
-    <ol class="pg-steps">${p.stages.map((s,i)=>{ const d = sDone(s), c = i===ci;
+    <ol class="pg-steps">${p.stages.map((s,i)=>{ const d = sDone(s), c = i===ci || !!s.sent;
       return `<li class="${d?"done":c?"cur":""}"><span class="dot">${d?I_CHECK:c?I_PIN:i+1}</span><span class="nm">${/ · /.test(s.name) ? `<small>${esc(s.name.split(" · ")[0])}</small>${esc(s.name.split(" · ").slice(1).join(" · "))}` : esc(s.name)}</span>
         <span class="dt">${d ? (s.doneOn?"הושלם · "+dm(s.doneOn):"הושלם") : s.due ? "יעד · "+dm(s.due) : ""}</span>${c?`<span class="here">${(p.waiting||[]).length?"מחכים לך":"אנחנו כאן"}</span>`:""}</li>`; }).join("")}</ol></section>`;
 }
