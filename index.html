@@ -354,7 +354,7 @@ const paidOf = p => p.paidOn ? gross(p) : Math.min(gross(p), partsSum(p));
 const leftOf = p => Math.max(0, gross(p) - paidOf(p));
 const sDone = s => !!s.done || (s.tasks.length>0 && s.tasks.every(t=>t.done));
 const curIdx = p => { const i = p.stages.findIndex(s=>!sDone(s)); return i<0 ? p.stages.length : i; };
-const pct = p => Math.round(p.stages.filter(sDone).length / Math.max(1,p.stages.length) * 100);
+const pct = p => p.pct != null ? p.pct : Math.round(p.stages.filter(sDone).length / Math.max(1,p.stages.length) * 100);   // the studio's own number, the same one she sees
 const payPill = p => p.paidOn ? `<span class="pill ok">שולם</span>` : partsSum(p) > 0 ? `<span class="pill warn">שולם חלק · נותרו ${money(leftOf(p))}</span>` : p.due && daysUntil(p.due) < 0 ? `<span class="pill bad">באיחור</span>` : `<span class="pill warn">ממתין</span>`;
 const I_CHECK = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 const I_PIN = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.4"/></svg>';
