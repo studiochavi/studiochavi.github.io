@@ -372,6 +372,77 @@ img.av{background:#fff;object-fit:cover}
 .rd-hint{display:flex;align-items:center;gap:6px}
 .rd-rec[hidden],.rd-add[hidden]{display:none!important}
 
+/* the calm portal (11.11) */
+.v2{gap:22px;max-width:760px;padding-bottom:30px}
+.v2-me{margin:0;background:var(--accent-soft);border:1px dashed var(--accent);border-radius:12px;padding:8px 14px;font-size:13px;text-align:center}
+.v2-brand{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;letter-spacing:.04em}
+.v2-brand img{width:34px;height:34px;object-fit:contain}
+.v2-head h1{font-family:var(--f-display);font-size:30px;font-weight:500;margin:0 0 6px}
+.v2-say{margin:0;font-size:18px;line-height:1.6;color:var(--ink)}
+.v2-say b{font-weight:600}
+.v2-okc{color:var(--ok);font-weight:600}
+.v2-m{color:var(--muted);font-size:13.5px}
+.v2-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;padding:0 24px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:15px;font-weight:500;cursor:pointer;text-decoration:none}
+.v2-btn.pri{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.v2-btn.sm{min-height:36px;padding:0 16px;font-size:13.5px}
+.v2-btn:hover{opacity:.88}
+.v2-btn:disabled{opacity:.5;cursor:default}
+.v2-how{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px 22px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.v2-how ol{margin:0;padding-inline-start:20px;color:var(--muted);line-height:1.8;font-size:14.5px}
+.v2-turn{background:var(--accent-soft);border-radius:24px;padding:24px 26px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.v2-tag{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--accent)}
+.v2-turn h2{margin:0;font-family:var(--f-display);font-size:22px;font-weight:500;line-height:1.4}
+.v2-turn .v2-m{margin:0 0 6px}
+.v2-next{margin:6px 0 0;font-size:13.5px;color:var(--muted)}
+.v2-work{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:24px 26px;display:flex;flex-direction:column;gap:18px;scroll-margin-top:20px}
+.v2-wh{display:flex;flex-direction:column;gap:2px}
+.v2-wh h2{margin:0;font-family:var(--f-display);font-size:21px;font-weight:500}
+.v2-track{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.v2-track li{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);position:relative}
+.v2-track li::before{content:"";height:5px;border-radius:99px;background:var(--line)}
+.v2-track li.done::before{background:var(--accent)}
+.v2-track li.cur::before{background:var(--ink)}
+.v2-track li.cur{color:var(--ink);font-weight:600}
+.v2-track li.done{color:var(--ink)}
+.v2-d{display:none}
+.v2-figs{display:flex;flex-direction:column;gap:22px}
+.v2-figs.many{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.v2-fig{margin:0;display:flex;flex-direction:column;gap:10px;align-items:center}
+.v2-fig figcaption{font-weight:600;align-self:flex-start}
+.v2-img{background:var(--surface-2);border-radius:18px;padding:14px;width:100%;display:flex;justify-content:center}
+.v2-img img{max-width:100%;max-height:520px;border-radius:6px;display:block;box-shadow:0 6px 20px -10px rgba(0,0,0,.35)}
+.v2-img .pa-wait{min-height:220px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.v2-acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.v2-ok{margin:0;color:var(--ok);font-weight:600}
+.v2-fig .rd{width:100%}
+.v2 .rd-q{display:none}
+.v2-files{display:flex}
+.v2-money{display:flex;flex-direction:column;gap:6px}
+.v2-pay{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 20px;font-size:16px}
+.v2-pay b{font-weight:700}
+.v2-pay em{font-style:normal;font-size:12px;font-weight:600;background:var(--bad-soft);color:var(--bad);border-radius:999px;padding:2px 10px;margin-inline-start:6px}
+.v2-pay.done{color:var(--ok);font-weight:600;background:transparent;border-style:dashed}
+.v2-det>summary,.v2-past>summary{cursor:pointer;color:var(--muted);font-size:13.5px;padding:4px 6px;list-style:none}
+.v2-det>summary::-webkit-details-marker,.v2-past>summary::-webkit-details-marker{display:none}
+.v2-det>summary::before,.v2-past>summary::before{content:"‹ ";display:inline-block;transition:transform .15s}
+.v2-det[open]>summary::before,.v2-past[open]>summary::before{transform:rotate(-90deg)}
+.v2-prow{display:flex;align-items:center;gap:12px;padding:10px 6px;border-top:1px solid var(--line)}
+.v2-prow>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.v2-prow small{color:var(--muted);font-size:12.5px}
+.v2-prow a{color:inherit}
+.v2-amt{font-weight:600;white-space:nowrap}
+.v2-vat{margin:6px;color:var(--muted);font-size:12px}
+.v2-past>summary{font-size:15px;color:var(--ink);font-weight:500}
+.v2-drow{display:flex;align-items:center;gap:12px;padding:9px 6px;border-top:1px solid var(--line)}
+.v2-drow img{width:40px;height:40px;object-fit:cover;border-radius:8px}
+.v2-drow b{font-weight:500;flex:1;min-width:0}
+.v2-drow small{color:var(--ok);font-size:12.5px}
+.v2-dk{width:40px;height:40px;border-radius:8px;background:var(--ok-soft);color:var(--ok);display:flex;align-items:center;justify-content:center}
+.v2-drow .pj-files{font-size:12.5px;padding:4px 10px}
+.v2-foot{text-align:center;color:var(--muted);font-size:14px;padding-top:6px}
+.v2-foot a{color:var(--ink)}
+@media (max-width:560px){.v2-work,.v2-turn{padding:18px}.v2-head h1{font-size:25px}.v2-say{font-size:16px}.v2-track li{font-size:11.5px}}
+
 .pt-welcome{max-width:460px;margin:12vh auto 0;padding:0 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 .pt-welcome img{width:96px;height:96px;object-fit:contain;margin-bottom:6px}
 .pt-welcome h1{font-family:var(--f-display);font-size:30px;font-weight:500;margin:0}
@@ -405,7 +476,9 @@ if (!KEY) { document.title = "חוי מנדל · פורטל לקוחות";
   $root.innerHTML = `<div class="pt-welcome"><img src="${STUDIO_LOGO}" alt="חוי מנדל"><h1>פורטל הלקוחות</h1><p class="pt-w-by">חוי מנדל · עיצוב גרפי</p><p>כאן כל לקוחה רואה את העבודות שלה, שולחת תיקונים, מאשרת הצעות מחיר ומשלמת.</p><p class="pt-w-note">הכניסה היא בקישור האישי שקיבלת ממני.</p></div>`; return; }
 for (let i = 0; i < 2 && KEY && !J; i++) { try { J = await api("pd=" + encodeURIComponent(KEY) + vq()); failed = false; } catch { failed = true; await new Promise(r => setTimeout(r, 1500)); } }
 if (!J || !J.ok) { $root.innerHTML = `<p class="pt-empty" style="text-align:center;padding:60px 0">${failed ? "לא הצלחתי להתחבר כרגע. בדקי את החיבור ורענני את הדף." : "הקישור הזה לא פעיל. בקשי מחוי קישור חדש."}</p>`; return; }
-const DATA = J.data, ME = !!J.studio; let NOTES = J.notes || [], ROUNDS = J.rounds || [];
+const DATA = J.data, ME = !!J.studio; let NOTES = J.notes || [], ROUNDS = J.rounds || [], APPROVALS = J.approvals || [];
+/* the calm portal: Chavi sees it first; clients get it once she approves it (or with ?ui=2 for a test) */
+const NEWUI = ME || Q.get("ui") === "2";
 document.title = (ME ? "צ׳אט · " : "") + DATA.client.name + " · מעקב עבודה";
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pd = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
@@ -471,7 +544,7 @@ async function media(id){
 
 /* the ads she sent, side by side: pictures come from Drive through the script. An ad sent before this page keeps its picture inside the data */
 const adsOf = p => (p.ads || []).length ? p.ads : p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [];
-const adDone = (p, a) => a.status === "approved" || (p.adStates && p.adStates[a.key]) === "approved";
+const adDone = (p, a) => a.status === "approved" || (p.adStates && p.adStates[a.key]) === "approved" || APPROVALS.some(x => x.pid === p.id && x.key === (a.key || "old"));
 const ymd = at => { const d = new Date(at); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
 const roundsOf = (pid, ad) => ROUNDS.filter(r => r.pid === pid && (r.ad || "") === (ad || "")).sort((a, b) => a.n - b.n);
 /* a round is handled when she marked it, when its stage in the work is done, or when a newer version of the ad went out after it */
@@ -514,7 +587,7 @@ function roundsBox(p, a){
   const after = waiting ? `<p class="rd-note">${ME ? "הסבב אצלך בטיפול." : `קיבלתי את התיקונים ואני עובדת עליהם.${used < ROUNDS_MAX ? " כשתגיע גרסה מתוקנת, ייפתח כאן הסבב הבא." : ""}`}</p>`
     : used >= ROUNDS_MAX ? `<p class="rd-note">${ME ? "שני הסבבים הכלולים נוצלו." : "שני סבבי התיקונים הכלולים נוצלו. תיקונים נוספים בתוספת תשלום."}</p>` : "";
   return `<section class="rd" aria-label="תיקונים${ad ? " · " + esc(ad) : ""}"><div class="rd-top">${I_LIST}<h3>תיקונים${ad ? ` · ${esc(ad)}` : ""}</h3>${ME ? `<span class="rd-me">תצוגת סטודיו</span>` : ""}</div>
-    <p class="rd-sub">כדאי לרכז את כל התיקונים ולשלוח יחד: כלולים 2 סבבים, ותיקונים נוספים בתוספת תשלום.</p>
+    <p class="rd-sub">${NEWUI ? "אפשר לכתוב, להקליט או לצרף תמונה, ולשלוח הכול יחד. כלולים 2 סבבים." : "כדאי לרכז את כל התיקונים ולשלוח יחד: כלולים 2 סבבים, ותיקונים נוספים בתוספת תשלום."}</p>
     ${sent}${composer}${after}${ME ? "" : `<a class="rd-q" href="${mailQ(p, ad)}">${I_MAIL}<span>שאלה שאינה תיקון? כתבי לי במייל</span></a>`}</section>`;
 }
 
@@ -578,7 +651,7 @@ async function sendRound(card, btn){
   try {
     const r = await post({action: "round", key: KEY, pid, ad, items: l});
     if (!r || !r.ok) throw new Error((r && r.error) || "x");
-    ROUNDS.push(r.round); saveDraft(pid, ad, []); redrawRound(card);
+    ROUNDS.push(r.round); saveDraft(pid, ad, []); if (NEWUI) v2draw(); else redrawRound(card);
   } catch (e) {
     btn.disabled = false;
     msgIn(card, String(e.message) === "limit" ? "שני הסבבים הכלולים כבר נשלחו. לתיקונים נוספים אפשר לכתוב לי במייל." : String(e.message) === "too many" ? "נשלח הרבה בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. התיקונים נשמרו כאן, נסי שוב בעוד רגע.", true);
@@ -628,6 +701,111 @@ function chatInit(){
       catch { t.disabled = false; t.textContent = "לא נשמר, נסי שוב"; } }
   });
 }
+
+/* the calm portal (her wish, 11.11): the page answers one question first, "what do I need to do now?".
+   One status line, one "your turn" card, each work with its picture and two buttons, money in one line.
+   Shown in the studio view (and with ?ui=2) until she approves it for every client. */
+const WD = ["ראשון","שני","שלישי","רביעי","חמישי","שישי","שבת"];
+const dayDM = s => s ? `יום ${WD[pd(s).getDay()]} ${dm(s)}` : "";
+const shekel = n => `${Math.round(+n || 0).toLocaleString("he-IL")} ש"ח`;
+const PHASES = ["הזמנה", "עיצוב", "תיקונים ואישור", "מוכן"];
+const V2OPEN = new Set();   // revision boxes she opened with "יש לי תיקונים"
+const openWorks = () => ps.filter(p => !p._done);
+const openAds = p => adsOf(p).filter(a => !adDone(p, a));
+const labOf = (p, a) => openAds(p).length > 1 ? (a.label || "") : "";
+const fixBusy = (p, a) => { const l = roundsOf(p.id, labOf(p, a)), last = l[l.length - 1]; return !!(last && !roundClosed(p, last, a)); };
+const phaseOf = p => { if (p._done || p.stages.every(sDone)) return 3; const ci = curIdx(p), s = p.stages[ci];
+  if (openAds(p).length || (s && /סבב|תיקון|שינוי|דיוק|אישור/.test(s.name || ""))) return 2; return ci === 0 ? 0 : 1; };
+
+/* what waits for her, one after the other: what the studio asked for, then work to look at and approve */
+function yourTurn(){
+  const out = [];
+  openWorks().forEach(p => (p.waiting || []).forEach(t => out.push({p, k: "ask", t: String(t)})));
+  openWorks().forEach(p => openAds(p).forEach(a => { if (!fixBusy(p, a)) out.push({p, a, k: "look", t: `לעבור על ${a.label || p.title} ולאשר, או לשלוח תיקונים`}); }));
+  return out;
+}
+function statusLine(turn){
+  const first = String(c.contact || c.name || "").trim().split(/\s+/)[0];
+  let say;
+  if (turn.length) say = `${turn.length === 1 ? "מחכה לך דבר אחד" : `מחכים לך ${turn.length} דברים, אחד אחרי השני`}: <b>${esc(turn[0].t)}</b>`;
+  else if (!openWorks().length) say = `<span class="v2-okc">הכול הושלם ✓</span> תודה! העבודות שלך שמורות כאן למטה.`;
+  else { const p = openWorks().slice().sort((a, b) => (a.deadline || "9").localeCompare(b.deadline || "9"))[0], busy = adsOf(p).some(a => fixBusy(p, a)) || roundsOf(p.id, "").some(r => !roundClosed(p, r, null));
+    say = `<span class="v2-okc">הכול אצלי ✓</span> ${busy ? "קיבלתי את התיקונים ואני עובדת עליהם" : `אני עובדת על ${esc(p.title)}`}${p.deadline ? `. המסירה מתוכננת ל${dayDM(p.deadline)}` : ""}.`; }
+  return `<header class="v2-head"><h1>שלום ${esc(first)}</h1><p class="v2-say">${say}</p></header>`;
+}
+function turnCard(turn){
+  if (!turn.length) return "";
+  const x = turn[0], mail = `mailto:${esc(DATA.email || "studiochavi1@gmail.com")}?subject=${encodeURIComponent(x.t + " · " + x.p.title)}`;
+  const btn = x.k === "ask" ? `<a class="v2-btn pri" href="${mail}">לשלוח לי במייל</a>` : `<button type="button" class="v2-btn pri" data-v2go="${esc(x.p.id)}">לצפייה ולאישור</button>`;
+  return `<section class="v2-turn"><span class="v2-tag">התור שלך</span><h2>${esc(x.t)}</h2><p class="v2-m">${esc(x.p.title)}</p>${btn}
+    ${turn.length > 1 ? `<p class="v2-next">ואחר כך: ${turn.slice(1).map(y => esc(y.t)).join(" · ")}</p>` : ""}</section>`;
+}
+const track = p => { const ph = phaseOf(p);
+  return `<ol class="v2-track" aria-label="איפה העבודה עומדת">${PHASES.map((n, i) => `<li class="${i < ph ? "done" : i === ph ? "cur" : ""}"><span class="v2-d">${i < ph ? "✓" : ""}</span><span>${n}</span></li>`).join("")}</ol>`; };
+function workCard(p){
+  const op = openAds(p), many = op.length > 1, shown = op.length ? op : adsOf(p).slice(-1);
+  const fig = a => {
+    const lab = labOf(p, a), fid = `${p.id}|${lab}`, ok = adDone(p, a), busy = fixBusy(p, a), opened = V2OPEN.has(fid) || busy || (!ME && draft(p.id, lab).length);
+    const img = a.img ? `<a href="${a.img}" target="_blank" rel="noopener"><img src="${a.img}" alt="${esc(a.label || p.title)}"></a>`
+      : `<a class="pa-wait" data-adimg="${esc(a.fid)}" target="_blank" rel="noopener" aria-label="${esc(a.label || p.title)}"><span>טוען…</span></a>`;
+    const ap = APPROVALS.find(x => x.pid === p.id && x.key === (a.key || "old"));
+    const acts = ok ? `<p class="v2-ok">✓ אישרת${ap ? " · " + dm(ymd(ap.at)) : ""}. תודה!</p>` : busy ? ""
+      : `<div class="v2-acts"><button type="button" class="v2-btn pri" data-v2ok="${esc(p.id)}" data-adk="${esc(a.key || "old")}" data-adl="${esc(a.label || "")}">מאשרת ✓</button>
+         <button type="button" class="v2-btn" data-v2fix="${esc(fid)}" aria-expanded="${!!opened}">יש לי תיקונים</button></div>`;
+    return `<figure class="v2-fig">${many && a.label ? `<figcaption>${esc(a.label)}</figcaption>` : ""}<div class="v2-img">${img}</div>
+      ${a.sentOn && !ok ? `<small class="v2-m">נשלח אלייך ב${dayDM(a.sentOn)}</small>` : ""}${acts}${!ok && opened ? roundsBox(p, many ? a : {...a, label: ""}) : ""}</figure>`; };
+  const noAd = () => { if (!(inRevision(p) || roundsOf(p.id, "").length)) return "";
+    return V2OPEN.has(p.id + "|") || roundsOf(p.id, "").length || (!ME && draft(p.id, "").length) ? roundsBox(p, null) : `<div class="v2-acts"><button type="button" class="v2-btn" data-v2fix="${esc(p.id)}|">יש לי תיקונים</button></div>`; };
+  return `<article class="v2-work" id="w-${esc(p.id)}"><div class="v2-wh"><h2>${esc(p.title)}</h2>${p.deadline ? `<span class="v2-m">מסירה: ${dayDM(p.deadline)}</span>` : ""}</div>
+    ${track(p)}${adsOf(p).length ? `<div class="v2-figs ${many ? "many" : ""}">${shown.map(fig).join("")}</div>` : noAd()}${p.finalUrl ? `<div class="v2-files">${filesBtn(p)}</div>` : ""}</article>`;
+}
+function payLine(){
+  if (!pays.length) return "";
+  const okUrl = u => /^https:\/\//.test(u || ""), open = pays.filter(y => leftOf(y) > 0), left = open.reduce((a, y) => a + leftOf(y), 0);
+  const late = open.some(y => y.due && daysUntil(y.due) < 0), one = open.length === 1 ? open[0] : null;
+  const title = y => y.what || (ps.find(p => p.id === y.projectId) || {}).title || y.label || "תשלום";
+  const ref = y => !payRef(y) ? "" : okUrl(y.docUrl) ? `<a href="${esc(y.docUrl)}" target="_blank" rel="noopener">${esc(payRef(y))}</a>` : esc(payRef(y));
+  const row = y => { const lo = leftOf(y) > 0;
+    return `<div class="v2-prow"><div><b>${esc(title(y))}</b><small>${[ref(y), lo && y.due ? "עד " + esc(dayDM(y.due)) : "", !lo ? "✓ שולם" + (y.paidOn ? " " + dm(y.paidOn) : "") : ""].filter(Boolean).join(" · ")}</small></div>
+      <span class="v2-amt">${shekel(lo ? leftOf(y) : gross(y))}</span>${lo && okUrl(y.payUrl) && !one ? `<a class="v2-btn sm" href="${esc(y.payUrl)}" target="_blank" rel="noopener">לתשלום</a>` : ""}</div>`; };
+  const head = open.length
+    ? `<div class="v2-pay ${late ? "late" : ""}"><span>לתשלום: <b>${shekel(left)}</b>${late ? ` <em>באיחור</em>` : ""}</span>${one && okUrl(one.payUrl) ? `<a class="v2-btn pri" href="${esc(one.payUrl)}" target="_blank" rel="noopener">לתשלום מאובטח</a>` : ""}</div>`
+    : `<div class="v2-pay done"><span>הכול שולם ✓</span></div>`;
+  return `<section class="v2-money">${head}<details class="v2-det"><summary>פרטי התשלומים</summary>${pays.slice().sort((a, b) => (leftOf(b) > 0) - (leftOf(a) > 0)).map(row).join("")}<p class="v2-vat">הסכומים כוללים מע״מ</p></details></section>`;
+}
+function doneList(){
+  const past = ps.filter(p => p._done); if (!past.length) return "";
+  return `<details class="v2-past" open><summary>עבודות שהסתיימו · ${past.length}</summary>${past.map(p => { const last = p.stages.map(s => s.doneOn || "").filter(Boolean).sort().pop();
+    return `<div class="v2-drow">${p.cover ? `<img src="${esc(p.cover)}" alt="">` : `<span class="v2-dk">✓</span>`}<b>${esc(p.title)}</b><small>${last ? "הושלם " + dm(last) : "הושלם"}</small>${filesBtn(p)}</div>`; }).join("")}</details>`;
+}
+const HKEY = "ava-howto-" + KEY;
+const howSeen = () => { try { return localStorage.getItem(HKEY) === "1"; } catch { return false; } };
+const howTo = () => howSeen() ? "" : `<section class="v2-how"><b>ככה זה עובד</b><ol><li>מה שמחכה לך יופיע תמיד כאן למעלה.</li><li>על כל עיצוב אפשר לאשר, או לשלוח תיקונים. כלולים 2 סבבים.</li><li>כדאי לשמור את הקישור: הדף מתעדכן לאורך כל העבודה.</li></ol><button type="button" class="v2-btn sm" data-v2how="1">הבנתי</button></section>`;
+function newPage(){
+  const turn = yourTurn(), first = turn.length ? turn[0].p.id : "";
+  const works = openWorks().slice().sort((a, b) => (b.id === first) - (a.id === first));
+  return `<div class="pt v2">${ME ? `<p class="v2-me">תצוגה חדשה · כרגע רק את רואה אותה. הלקוחות רואים עדיין את הדף הקודם.</p>` : ""}
+    <div class="v2-brand"><img src="${STUDIO_LOGO}" alt=""><span>חוי מנדל · עיצוב גרפי</span></div>
+    ${statusLine(turn)}${howTo()}${turnCard(turn)}${works.map(workCard).join("")}${payLine()}${doneList()}
+    <footer class="v2-foot">שאלה? <a href="tel:0533134900" dir="ltr">053.313.4900</a> · או <a href="mailto:${esc(DATA.email || "studiochavi1@gmail.com")}">במייל</a></footer></div>`;
+}
+function v2draw(){ const y = scrollY; document.getElementById("root").innerHTML = newPage(); loadAdImgs(); scrollTo(0, y); }
+document.addEventListener("click", async e => {
+  if (!NEWUI) return;
+  const t = e.target.closest("[data-v2go],[data-v2fix],[data-v2ok],[data-v2how]"); if (!t) return;
+  if (t.dataset.v2how) { try { localStorage.setItem(HKEY, "1"); } catch {} return v2draw(); }
+  if (t.dataset.v2go) { const w = document.getElementById("w-" + t.dataset.v2go); if (w) w.scrollIntoView({behavior: "smooth", block: "start"}); return; }
+  if (t.dataset.v2fix) { V2OPEN.has(t.dataset.v2fix) ? V2OPEN.delete(t.dataset.v2fix) : V2OPEN.add(t.dataset.v2fix); v2draw();
+    const box = document.querySelector(`[data-rd="${CSS.escape(t.dataset.v2fix)}"] .rd-ta`); if (box && !box.disabled) box.focus(); return; }
+  if (t.dataset.v2ok) {
+    if (ME) { t.textContent = "בתצוגת סטודיו הכפתור לא שולח"; return; }
+    if (!t.dataset.armed) { t.dataset.armed = "1"; t.textContent = "לאשר סופית? לחצי שוב"; return; }
+    t.disabled = true; t.textContent = "שולחת…";
+    try { const r = await post({action: "approve", key: KEY, pid: t.dataset.v2ok, adKey: t.dataset.adk, ad: t.dataset.adl});
+      if (!r || !r.ok) throw 0; APPROVALS.push(r.ap); v2draw(); }
+    catch { t.disabled = false; delete t.dataset.armed; t.textContent = "לא נשלח, נסי שוב"; }
+  }
+});
 
 /* one card per project: progress, the ad, notes, and the project's own payments at the bottom.
    Finished projects fold into a single line that says the work is closed and whether it is paid. */
@@ -682,7 +860,7 @@ function adBlock(p){
 const c = DATA.client, ps = DATA.projects, pays = DATA.payments;
 const paid = pays.reduce((a,p)=>a+paidOf(p),0), due = pays.reduce((a,p)=>a+leftOf(p),0);
 const logo = c.logo ? `<img class="av xl" src="${esc(c.logo)}" alt="">` : `<span class="av xl" aria-hidden="true">${esc((c.name||"?").trim().charAt(0))}</span>`;
-document.getElementById("root").innerHTML = `<div class="pt">
+document.getElementById("root").innerHTML = NEWUI ? newPage() : `<div class="pt">
   <div class="pt-brand" role="img" aria-label="חוי סטודיו · עיצוב גרפי"><svg viewBox="0 0 2000 290" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="#F6F3EF" stroke-linecap="round" stroke-width="118"><path d="M230 -40 L360 150"/><path d="M740 -40 L955 300 L1140 -40"/><path d="M1515 -40 L1350 310"/><path d="M1800 -40 L1985 300"/></g></svg><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAACDCAYAAAApiRZJAAAEwUlEQVR42u3d0XEbMQxFUWJH/aWLlJD2kQI88jgT7RIgzv31h7Eg+PBASqv48/vXKkiutWLz//8XYqFqHXVZx5xcS6/CxZKNNnwSqHais7sB/rTugxDVK5xuXSMJUnnxeXrTpxr6ytW0gPLm+OKG5026MTqf/xvz0TV0Ne5idy9M2EAjXNATbigbPP8oIcpGhdlxM3FBZ4vQsfVz2XxHFSgXJCeEyKLYYA1zpNkMEqJczg4U66zcpPzUEiIbTY4mjt5qZ+Bo1t0VESNuyGhmQXyNY+BGDvniiCyKTuo2FI8IUSpgaCTytlOIUjETcM0Ek0czB9fWbGrsSYhmbSJd1QE1QeSIdFg4oDaaWRCuSN3IJ0fEFYEb4ogsCFekbqrHnhOFKBWM2DULGM1c51sTsbfN72WT6Lqu6+WZI7IoBN8BtdHMgui+RFW+OwuR17OKnRuC0YwrIqZiPyP2a2hXUFCaATiio6/EXedrAJ7hASHSkXVleb8n9rFN7Cr82Q/O4qzY/T6ZxtX2sLp7hwPBN9p/WIhO/SSsTWIkqxZ7cET1isnBtS8ci/3wZ7ssCLihkrEHR1SvmLiino2CG/KMHxOi1PmWg2t53RH7mCZ2eVWDDr5ceS/X9UYzHZDlF/twV3RxQzYRUS8fe3BEvocmdkLOxW4SoupuyIi2HFAPiz2mOSLvEtbZlwNqruj00Sx0Rq6IkzPafydEaUNzRdyQxnOyI7rrfStdFzlYerFzRV+FKBsnz9nBOvrcwxh+uMO6DiqiO99w5zqfUC8H1/cLUTZ+9WWV/6u7yc+TsR81ol03/LMqQvDpOHR+B9QoPppFYSdSOTau6NyxI5aD6x/zGrYJYvjmC27ouDqLE9ydX3olksZUbM8ZIVJQRLl/7MERYdrMzw1pYoSIGHl+sZ93cE2IdDfX9TCagStyXc8VESKb03X9WbEHRwS/buKAWhMjRGi6Sbmh4fkkRIo8FzeEzbklRMTI850Ze6uDa0KE7wrKdb2bTaMZFL2RbIYrIkR4V1AcxRmxB0eErt3NATUezTkhIkae4/zYgyMCR+H7ZOqGEHFFNoLcVz+4JkQgohqA0Qw2hZGMKyJEIJ6zhD84Itgc3JA1IUTESJwEv+IzESIs1/XYvTaEyEY3ks3MbamDa0IEG5nAG81g0xjJuCJCBOI4W9iDI4LNww1ZM0JEjIiis6EKz0yI4Loe210RISIERjI3ZdsPrgkRbGQitD0HhEhBcUPYvpaECMSPG9qeC0KkoLghbF9TQkSMKv8fB9RDmhghgpEMO3KThEhBGcmIUCkxIkQKauJmJkLFckWIFNS0T1AToYJrTYgU1KRfOyVCRfNHiIhR6UNMAjRCkPIlr6PFKE/5pVAjWIsaegshUkzfiUBsiCcJT2uHnYQI3mWEluvnjAjA8mI0AIRICgAQIgCESAoAECIAhEgKABAiAIRICgAQIgCESAoAECIAhEgKABAiAIRICgAQIgCESAoA7MYbGpffIF/ekFj9Z7HX6W+6JEQ2z7u/ESQYzbC9g6dUgRChwhhBjECIABAiOFTlikCIABAiACBEAAgRABAirAqftPXBRhAiAIQIs10RNwRChK1iRISwfOkVT4iRb9+jBH8Bfh4nQonvPRcAAAAASUVORK5CYII=" alt="AVA"></div>
   <header class="pt-head">${logo}<div><div class="pt-eyebrow">${DATA.studio?esc(DATA.studio)+" · ":""}עודכן ב־${dm(DATA.updated)}</div><h1>שלום ${esc(c.contact||c.name)}</h1><p>כאן רואים בכל רגע איפה העבודה שלך עומדת ומה מצב התשלומים.</p></div></header>
   ${projList(ps, p => p._done, p => projCard(p, pays.filter(y=>y.projectId===p.id), progressBlock(p) + adsBlock(p), p._done))}
