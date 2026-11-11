@@ -832,7 +832,7 @@ function newPage(){
   return `<div class="pt v2">${ME ? `<p class="v2-me">תצוגה חדשה · כרגע רק את רואה אותה. הלקוחות רואים עדיין את הדף הקודם.</p>` : ""}
     <div class="v2-brand" role="img" aria-label="חוי מנדל · עיצוב גרפי">${AVA_SVG}</div>
     ${statusLine(turn)}${turnCard(turn)}${works.map(workCard).join("")}${payLine()}${doneList()}
-    <footer class="v2-foot"><span class="v2-keep">כדאי לשמור את הקישור הזה: הדף מתעדכן לאורך כל העבודה.</span>שאלה? <a href="tel:0533134900" dir="ltr">053.313.4900</a> · או <a href="mailto:${esc(DATA.email || "studiochavi1@gmail.com")}">במייל</a></footer></div>`;
+    <footer class="v2-foot"><span class="v2-keep">כדאי לשמור את הקישור הזה: הדף מתעדכן לאורך כל העבודה.</span><span>שאלה? <a href="tel:0533134900" dir="ltr">053.313.4900</a> · או <a href="mailto:${esc(DATA.email || "studiochavi1@gmail.com")}">במייל</a></span></footer></div>`;
 }
 function v2draw(){ const y = scrollY; document.getElementById("root").innerHTML = newPage(); loadAdImgs(); scrollTo(0, y); }
 document.addEventListener("click", async e => {
