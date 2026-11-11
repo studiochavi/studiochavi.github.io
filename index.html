@@ -636,7 +636,7 @@ function projList(ps, isDone, card){
   if (!ps.length) return `<p class="pt-empty">אין עבודות כרגע.</p>`;
   const now = ps.filter(p => !isDone(p)), past = ps.filter(isDone);
   return (now.length ? `<section class="pt-now"><h2 class="pt-sec">בעבודה עכשיו</h2>${now.map(card).join("")}</section>` : "")
-    + (past.length ? `<details class="pa-fold pt-past"><summary>עבודות שהסתיימו · ${past.length}</summary><div class="pa-fold-in">${past.map(card).join("")}</div></details>` : "");
+    + (past.length ? `<details class="pa-fold pt-past" open><summary>עבודות שהסתיימו · ${past.length}</summary><div class="pa-fold-in">${past.map(card).join("")}</div></details>` : "");
 }
 /* all the money in one card, each sum shown once:
    open → one strong line per open request (or one big line when there is only one), plus the total when there are several;
