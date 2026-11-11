@@ -778,7 +778,8 @@ function turnCard(turn){
   const many = openWorks().length > 1;
   const item = (x, i) => {
     const sub = many ? `<small class="v2-m">${esc(x.p.title)}</small>` : "";
-    if (x.k === "look") return `<li class="v2-todo-i"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}</div><button type="button" class="v2-btn pri sm" data-v2go="${esc(x.p.id)}">לצפייה בעיצוב ↓</button></li>`;
+    /* the picture is right below: a button only when there are several works and it may be further down */
+    if (x.k === "look") return `<li class="v2-todo-i"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}${many ? "" : `<small class="v2-m">העיצוב מופיע כאן למטה</small>`}</div>${many ? `<button type="button" class="v2-btn pri sm" data-v2go="${esc(x.p.id)}">לצפייה בעיצוב ↓</button>` : ""}</li>`;
     if (answered(x)) return `<li class="v2-todo-i done"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}</div><span class="v2-okc">✓ שלחת, תודה!</span></li>`;
     return `<li class="v2-todo-i"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}</div>
       <div class="v2-ans" data-v2ans="${i}"><textarea rows="2" maxlength="2000" placeholder="${ME ? "תצוגה בלבד: כאן הלקוחה עונה" : "כתבי כאן את התשובה"}" aria-label="התשובה שלך" ${ME ? "disabled" : ""}></textarea>
