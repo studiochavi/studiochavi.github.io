@@ -345,6 +345,27 @@ img.av{background:#fff;object-fit:cover}
 .rd-mark{border:1px solid var(--line);background:var(--surface);border-radius:999px;font:inherit;font-size:12.5px;padding:3px 12px;cursor:pointer;margin-inline-start:auto}
 .rd-q{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13.5px;color:var(--muted);text-decoration:none}
 .rd-q:hover{color:var(--ink);text-decoration:underline}
+/* rounds 2 (11.11): files with a fix, studio preview */
+.rd-me{font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 10px;background:#FFF4DC;color:#8A6412;margin-inline-start:auto}
+.rd-add{align-items:flex-end}
+.rd-add.preview .rd-ta{opacity:.6}
+.rd-tools{display:flex;align-items:center;gap:6px;flex:none}
+.rd-ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--muted);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.rd-ic:hover{color:var(--ink)}
+.rd-ic[disabled],.rd-plus[disabled]{opacity:.45;cursor:default}
+.rd-pend{display:flex;align-items:center;gap:10px;margin-top:10px;background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:8px 10px}
+.rd-pend img{max-height:90px;max-width:160px;border-radius:8px}
+.rd-pend audio{height:34px}
+.rd-rec{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px}
+.rd-dot{width:10px;height:10px;border-radius:50%;background:#C8434B;animation:rdp 1s infinite}
+@keyframes rdp{50%{opacity:.3}}
+.rd-recx,.rd-recs{border:1px solid var(--line);background:var(--surface);border-radius:999px;font:inherit;font-size:13px;padding:4px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.rd-tx{white-space:pre-wrap}
+.rd-f{display:inline-flex;align-items:center;gap:4px;margin-inline-start:8px;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:1px 10px;cursor:pointer;color:var(--ink);text-decoration:none;vertical-align:middle}
+.rd-f.img{padding:2px;border-radius:10px}
+.rd-f.img img{display:block;max-height:80px;max-width:140px;border-radius:8px}
+.rd-hint{display:flex;align-items:center;gap:6px}
+.rd-rec[hidden],.rd-add[hidden]{display:none!important}
 
 </style>
 </head><body>
@@ -409,14 +430,19 @@ const LSK = id => "studio-notes-v2-" + (id || "");  /* v2: the trial notes from 
 const readLog = id => { try { return JSON.parse(localStorage.getItem(LSK(id)) || "[]"); } catch { return []; } };
 const writeLog = (id, l) => { try { localStorage.setItem(LSK(id), JSON.stringify(l.slice(-30))); } catch {} };
 /* revision rounds instead of a chat (her decision, 11.11): next to every piece of work that was sent, the client lists all fixes
-   and sends them together as one round. Two rounds are included. A question that is not a fix goes by email. */
+   (each may carry a screenshot, picture, file or voice note) and sends them together as one round. Two rounds are included. */
 const when = at => { const d = new Date(at), t = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`, n = new Date(); n.setHours(0,0,0,0);
   const x = new Date(at); x.setHours(0,0,0,0); const k = Math.round((n - x) / 864e5); return k <= 0 ? "היום " + t : k === 1 ? "אתמול " + t : `${d.getDate()}.${d.getMonth()+1} · ${t}`; };
+const dur = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
 const SVG = (d, w = 20) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const I_SEND = SVG('<path d="M20 4L9.5 14.5M20 4l-6.5 16-4-5.5L4 10.5z"/>', 18);
 const I_PLUS = SVG('<path d="M12 5v14M5 12h14"/>', 22);
 const I_LIST = SVG('<path d="M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5"/>', 20);
 const I_MAIL = SVG('<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/>', 16);
+const I_CLIP = SVG('<path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.2-8.2a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.7 1.7 0 0 1-2.4-2.4l7.4-7.4"/>', 19);
+const I_MIC = SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>', 19);
+const I_STOP = SVG('<rect x="6" y="6" width="12" height="12" rx="2.5"/>', 16);
+const I_LOCK = SVG('<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>', 14);
 const ROUNDS_MAX = 2;
 
 /* files live in Drive behind the script; each one is fetched once, when it is needed */
@@ -440,28 +466,41 @@ const roundClosed = (p, r, a) => r.status === "done" || stageDone(p, r.n) || !!(
 /* without a picture in the portal, the box shows once the work reached its first round of fixes */
 const inRevision = p => { const st = p.stages || [], i = st.findIndex(s => /סבב|תיקונים|שינויים ודיוקים/.test(s.name || "")); return i > 0 && st.slice(0, i).every(s => s.done) && !st.every(s => s.done); };
 
+/* the draft lives only in this browser until it is sent; a file is already kept in Drive, but nobody sees it before the round goes out */
 const dKey = (pid, ad) => "ava-rd-" + KEY + "-" + pid + "-" + (ad || "");
 const draft = (pid, ad) => { try { return JSON.parse(localStorage.getItem(dKey(pid, ad)) || "[]"); } catch { return []; } };
 const saveDraft = (pid, ad, l) => { try { localStorage.setItem(dKey(pid, ad), JSON.stringify(l)); } catch {} };
 const mailQ = (p, ad) => `mailto:${esc(DATA.email || "studiochavi1@gmail.com")}?subject=${encodeURIComponent("שאלה על " + (ad || p.title))}`;
+const itemT = x => typeof x === "string" ? x : (x && x.t) || "";
+const itemF = x => x && typeof x === "object" ? x.f : null;
+const fileChip = f => !f ? "" : f.kind === "image" ? `<span class="rd-f img" data-rfimg="${esc(f.id)}">🖼 תמונה</span>`
+  : f.kind === "audio" ? `<button type="button" class="rd-f" data-rfplay="${esc(f.id)}">🎤 הקלטה${f.dur ? " · " + dur(f.dur) : ""}</button>`
+  : `<button type="button" class="rd-f" data-rffile="${esc(f.id)}" data-name="${esc(f.name || "")}">📎 ${esc(f.name || "קובץ")}</button>`;
+const itemHtml = x => `${itemT(x) ? `<span class="rd-tx">${esc(itemT(x))}</span>` : ""}${fileChip(itemF(x))}`;
 
+const PEND = new Map();   // card id -> the file waiting to join the next fix {blob, name, mime, dur, url}
 function roundsBox(p, a){
   const ad = (a && a.label) || "", list = roundsOf(p.id, ad), last = list[list.length - 1], used = list.length;
-  const waiting = last && !roundClosed(p, last, a), canNew = !ME && !waiting && used < ROUNDS_MAX;
+  const waiting = last && !roundClosed(p, last, a), canNew = !waiting && used < ROUNDS_MAX;
   const st = r => roundClosed(p, r, a) ? `<span class="rd-st ok">✓ טופל</span>` : `<span class="rd-st sent">נשלח ${when(r.at)} · בטיפול</span>`;
   const sent = list.map(r => `<div class="rd-card done"><div class="rd-h"><b>סבב תיקונים ${r.n}</b>${st(r)}${ME && !roundClosed(p, r, a) ? `<button type="button" class="rd-mark" data-rdone="${r.at}">✓ סימון שטופל</button>` : ""}</div>
-      <ol class="rd-items">${r.items.map(x => `<li>${esc(x)}</li>`).join("")}</ol>${r.who ? `<small class="rd-who">נשלח על ידי ${esc(r.who)}</small>` : ""}</div>`).join("");
-  const n = used + 1, items = draft(p.id, ad), id = `${p.id}|${ad}`;
+      <ol class="rd-items">${r.items.map(x => `<li>${itemHtml(x)}</li>`).join("")}</ol>${r.who ? `<small class="rd-who">נשלח על ידי ${esc(r.who)}</small>` : ""}</div>`).join("");
+  const n = used + 1, id = `${p.id}|${ad}`, items = ME ? [] : draft(p.id, ad), pend = PEND.get(id);
+  /* in the studio view the same box shows, as the client sees it, without writing */
   const composer = canNew ? `<div class="rd-card" data-rd="${esc(id)}"><div class="rd-h"><b>סבב תיקונים ${n}</b><span class="rd-st">עדיין לא נשלח</span>${n === ROUNDS_MAX ? `<span class="rd-last">הסבב האחרון שכלול</span>` : ""}</div>
-      ${items.length ? `<ol class="rd-items edit">${items.map((x, i) => `<li><span>${esc(x)}</span><button type="button" class="rd-x" data-rdx="${i}" aria-label="מחיקת התיקון">✕</button></li>`).join("")}</ol>` : `<p class="rd-empty">אין עדיין תיקונים בסבב הזה.</p>`}
-      <div class="rd-add"><textarea rows="2" maxlength="1500" class="rd-ta" placeholder="תיקון חדש... (Enter להוספה)" aria-label="תיקון חדש"></textarea><button type="button" class="rd-plus" data-rdadd="1" aria-label="הוספת התיקון לרשימה" title="הוספה לרשימה">${I_PLUS}</button></div>
-      <button type="button" class="rd-send" data-rdsend="1" ${items.length ? "" : "disabled"}>${I_SEND}<span>שליחת הסבב לטיפול</span></button>
-      <p class="rd-hint">עד שלא שולחים - כל מה שנכתב כאן נשמר, ואף אחד לא מתחיל לעבוד עליו.</p><div class="rd-msg" role="status"></div></div>` : "";
-  const after = !ME && waiting ? `<p class="rd-note">קיבלתי את התיקונים ואני עובדת עליהם. כשתגיע גרסה מתוקנת${used < ROUNDS_MAX ? ", אפשר יהיה לפתוח כאן את הסבב הבא" : ""}.</p>`
-    : !ME && used >= ROUNDS_MAX ? `<p class="rd-note">שני סבבי התיקונים הכלולים נוצלו. תיקונים נוספים אפשריים בתוספת תשלום, אפשר לכתוב לי במייל.</p>` : "";
-  if (!list.length && !canNew) return "";
-  return `<section class="rd" aria-label="תיקונים${ad ? " · " + esc(ad) : ""}"><div class="rd-top">${I_LIST}<h3>תיקונים${ad ? ` · ${esc(ad)}` : ""}</h3></div>
-    <p class="rd-sub">${ME ? "הסבבים שהלקוח שלח. סימון ✓ אומר ללקוח שהסבב טופל." : "כותבים כאן את כל התיקונים, ושולחים אותם יחד כשהרשימה מלאה. כלולים שני סבבי תיקונים."}</p>
+      ${items.length ? `<ol class="rd-items edit">${items.map((x, i) => `<li>${itemHtml(x)}<button type="button" class="rd-x" data-rdx="${i}" aria-label="מחיקת התיקון">✕</button></li>`).join("")}</ol>` : `<p class="rd-empty">${ME ? "כאן הלקוחה כותבת את התיקונים." : "אין עדיין תיקונים בסבב הזה."}</p>`}
+      ${pend ? `<div class="rd-pend">${pend.mime.startsWith("image/") ? `<img src="${pend.url}" alt="">` : pend.mime.startsWith("audio/") ? `<audio controls src="${pend.url}"></audio>` : `<span>📎 ${esc(pend.name)}</span>`}<button type="button" class="rd-x" data-rdpx="1" aria-label="הסרת הקובץ">✕</button></div>` : ""}
+      <div class="rd-add ${ME ? "preview" : ""}"><textarea rows="2" maxlength="1500" class="rd-ta" placeholder="${ME ? "תצוגה בלבד: כך זה נראה אצל הלקוחה" : "תיקון חדש... (Enter להוספה, אפשר להדביק צילום מסך)"}" aria-label="תיקון חדש" ${ME ? "disabled" : ""}></textarea>
+        <div class="rd-tools"><label class="rd-ic" title="צירוף תמונה, צילום מסך או קובץ"><input type="file" class="rd-file" accept="image/*,application/pdf,audio/*" hidden ${ME ? "disabled" : ""}>${I_CLIP}</label>
+          <button type="button" class="rd-ic" data-rdmic="1" title="הקלטה קולית" aria-label="הקלטה קולית" ${ME ? "disabled" : ""}>${I_MIC}</button>
+          <button type="button" class="rd-plus" data-rdadd="1" aria-label="הוספת התיקון לרשימה" title="הוספה לרשימה" ${ME ? "disabled" : ""}>${I_PLUS}</button></div></div>
+      <div class="rd-rec" hidden><span class="rd-dot" aria-hidden="true"></span><span class="rd-rt">0:00</span><span>מקליטה…</span><button type="button" class="rd-recx" data-rdrx="1">ביטול</button><button type="button" class="rd-recs" data-rdrs="1">${I_STOP}<span>סיום</span></button></div>
+      <button type="button" class="rd-send" data-rdsend="1" ${items.length && !ME ? "" : "disabled"}>${I_SEND}<span>שליחת הסבב לטיפול</span></button>
+      <p class="rd-hint">${I_LOCK}<span>${ME ? "מה שהלקוחה כותבת נשמר אצלה בלבד, ומגיע אלייך רק כשהיא שולחת." : "נשמר רק אצלך. אני רואה רק אחרי שליחה."}</span></p><div class="rd-msg" role="status"></div></div>` : "";
+  const after = waiting ? `<p class="rd-note">${ME ? "הסבב אצלך בטיפול." : `קיבלתי את התיקונים ואני עובדת עליהם.${used < ROUNDS_MAX ? " כשתגיע גרסה מתוקנת, ייפתח כאן הסבב הבא." : ""}`}</p>`
+    : used >= ROUNDS_MAX ? `<p class="rd-note">${ME ? "שני הסבבים הכלולים נוצלו." : "שני סבבי התיקונים הכלולים נוצלו. תיקונים נוספים בתוספת תשלום."}</p>` : "";
+  return `<section class="rd" aria-label="תיקונים${ad ? " · " + esc(ad) : ""}"><div class="rd-top">${I_LIST}<h3>תיקונים${ad ? ` · ${esc(ad)}` : ""}</h3>${ME ? `<span class="rd-me">תצוגת סטודיו</span>` : ""}</div>
+    <p class="rd-sub">כדאי לרכז את כל התיקונים ולשלוח יחד: כלולים 2 סבבים, ותיקונים נוספים בתוספת תשלום.</p>
     ${sent}${composer}${after}${ME ? "" : `<a class="rd-q" href="${mailQ(p, ad)}">${I_MAIL}<span>שאלה שאינה תיקון? כתבי לי במייל</span></a>`}</section>`;
 }
 
@@ -480,6 +519,7 @@ function adsBlock(p){
 }
 function loadAdImgs(){
   document.querySelectorAll("[data-adimg]").forEach(el => media(el.dataset.adimg).then(u => { el.href = u; el.classList.remove("pa-wait"); el.innerHTML = `<img src="${u}" alt="${esc(el.getAttribute("aria-label") || "המודעה")}">`; }).catch(() => { el.querySelector("span").textContent = "התמונה לא נטענה. נסי לרענן."; }));
+  document.querySelectorAll("[data-rfimg]").forEach(el => media(el.dataset.rfimg).then(u => { el.outerHTML = `<a class="rd-f img" href="${u}" target="_blank" rel="noopener"><img src="${u}" alt="תמונה"></a>`; }).catch(() => { el.textContent = "🖼 התמונה לא נטענה"; }));
 }
 /* no general chat any more: the page keeps its place in the code so the rest of the page needs no change */
 function chatCard(){ return ""; }
@@ -489,36 +529,86 @@ function redrawRound(card){
   const open = adsOf(p).filter(x => !adDone(p, x)), one = !ad && open.length === 1 ? {...open[0], label: ""} : null;
   const a = ad ? adsOf(p).find(x => x.label === ad) : one, box = card.closest(".rd"), html = roundsBox(p, a || (ad ? {label: ad} : null));
   if (box) { const t = document.createElement("div"); t.innerHTML = html; const nb = t.firstElementChild; if (nb) box.replaceWith(nb); else box.remove(); }
+  loadAdImgs();
 }
-function addItem(card){
-  const ta = card.querySelector(".rd-ta"), v = ta.value.trim(); if (!v) { ta.focus(); return; }
-  const [pid, ad] = card.dataset.rd.split("|"), l = draft(pid, ad); l.push(v); saveDraft(pid, ad, l);
-  redrawRound(card); const nc = document.querySelector(`[data-rd="${CSS.escape(card.dataset.rd)}"] .rd-ta`); if (nc) nc.focus();
+const cardOf = id => document.querySelector(`[data-rd="${CSS.escape(id)}"]`);
+const msgIn = (card, t, bad) => { const m = card && card.querySelector(".rd-msg"); if (!m) return; m.textContent = t || ""; m.classList.toggle("warn", !!bad); };
+function setPend(card, blob, name, d){
+  const id = card.dataset.rd, old = PEND.get(id); if (old) URL.revokeObjectURL(old.url);
+  if (blob && blob.size > 10 * 1024 * 1024) { PEND.delete(id); redrawRound(card); msgIn(cardOf(id), "הקובץ גדול מדי (עד 10MB).", true); return; }
+  if (blob) PEND.set(id, {blob, name: name || "", mime: blob.type || "application/octet-stream", dur: d || 0, url: URL.createObjectURL(blob)}); else PEND.delete(id);
+  const ta = card.querySelector(".rd-ta"), keep = ta ? ta.value : ""; redrawRound(card); const nc = cardOf(id); if (nc) { const t = nc.querySelector(".rd-ta"); t.value = keep; t.focus(); }
+}
+const b64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(blob); });
+async function addItem(card){
+  const id = card.dataset.rd, ta = card.querySelector(".rd-ta"), v = ta.value.trim(), pend = PEND.get(id);
+  if (!v && !pend) { ta.focus(); return false; }
+  const [pid, ad] = id.split("|");
+  let item = v;
+  if (pend) {
+    const btn = card.querySelector("[data-rdadd]"); btn.disabled = true; msgIn(card, "מעלה את הקובץ…");
+    try { const r = await post({action: "round-file", key: KEY, f: {b64: await b64(pend.blob), mime: pend.mime, name: pend.name, dur: pend.dur}});
+      if (!r || !r.ok) throw new Error((r && r.error) || "x");
+      MEDIA.set(r.f.id, pend.url); PEND.delete(id); item = {t: v, f: r.f}; }
+    catch (e) { btn.disabled = false; msgIn(card, String(e.message) === "too big" ? "הקובץ גדול מדי (עד 10MB)." : "הקובץ לא עלה. נסי שוב.", true); return false; }
+  }
+  const l = draft(pid, ad); l.push(item); saveDraft(pid, ad, l);
+  redrawRound(card); const nc = cardOf(id); if (nc) nc.querySelector(".rd-ta").focus();
+  return true;
 }
 async function sendRound(card, btn){
-  const [pid, ad] = card.dataset.rd.split("|"), pending = card.querySelector(".rd-ta").value.trim(), l = draft(pid, ad);
-  if (pending) { l.push(pending); saveDraft(pid, ad, l); }
-  if (!l.length) return;
-  const msg = card.querySelector(".rd-msg"); btn.disabled = true; msg.textContent = "שולחת…"; msg.classList.remove("warn");
+  const id = card.dataset.rd, [pid, ad] = id.split("|");
+  if (card.querySelector(".rd-ta").value.trim() || PEND.get(id)) { if (!(await addItem(card))) return; card = cardOf(id); btn = card.querySelector("[data-rdsend]"); }
+  const l = draft(pid, ad); if (!l.length) return;
+  btn.disabled = true; msgIn(card, "שולחת…");
   try {
     const r = await post({action: "round", key: KEY, pid, ad, items: l});
     if (!r || !r.ok) throw new Error((r && r.error) || "x");
     ROUNDS.push(r.round); saveDraft(pid, ad, []); redrawRound(card);
   } catch (e) {
-    btn.disabled = false; msg.classList.add("warn");
-    msg.textContent = String(e.message) === "limit" ? "שני הסבבים הכלולים כבר נשלחו. לתיקונים נוספים אפשר לכתוב לי במייל." : String(e.message) === "too many" ? "נשלח הרבה בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. התיקונים נשמרו כאן, נסי שוב בעוד רגע.";
+    btn.disabled = false;
+    msgIn(card, String(e.message) === "limit" ? "שני הסבבים הכלולים כבר נשלחו. לתיקונים נוספים אפשר לכתוב לי במייל." : String(e.message) === "too many" ? "נשלח הרבה בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. התיקונים נשמרו כאן, נסי שוב בעוד רגע.", true);
   }
 }
+/* voice: the browser records in its own format (webm in Chrome, mp4 on iPhone); up to 5 minutes */
+let REC = null;
+async function recStart(card){
+  if (!navigator.mediaDevices || !window.MediaRecorder) { msgIn(card, "הדפדפן הזה לא מאפשר הקלטה. אפשר לצרף קובץ שמע.", true); return; }
+  let stream; try { stream = await navigator.mediaDevices.getUserMedia({audio: true}); } catch { msgIn(card, "אין גישה למיקרופון. צריך לאשר לדפדפן ולנסות שוב.", true); return; }
+  const type = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
+  const mr = new MediaRecorder(stream, type ? {mimeType: type, audioBitsPerSecond: 48000} : undefined), parts = [], t0 = Date.now(), id = card.dataset.rd;
+  const rec = card.querySelector(".rd-rec"), add = card.querySelector(".rd-add");
+  REC = {mr, stream, t0, cancel: false, tick: setInterval(() => { const s = (Date.now() - t0) / 1000; const el = rec.querySelector(".rd-rt"); if (el) el.textContent = dur(s); if (s >= 300) recStop(false); }, 250)};
+  mr.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
+  mr.onstop = () => { const r = REC; REC = null; clearInterval(r.tick); r.stream.getTracks().forEach(x => x.stop());
+    const c = cardOf(id); if (!c) return; c.querySelector(".rd-rec").hidden = true; c.querySelector(".rd-add").hidden = false;
+    if (r.cancel || !parts.length) return;
+    setPend(c, new Blob(parts, {type: (mr.mimeType || type || "audio/webm").split(";")[0]}), "", Math.round((Date.now() - r.t0) / 1000)); };
+  mr.start(1000); add.hidden = true; rec.hidden = false; msgIn(card, "");
+}
+function recStop(cancel){ if (!REC) return; REC.cancel = cancel; REC.mr.stop(); }
+
 function chatInit(){
   loadAdImgs();
   document.addEventListener("keydown", e => { const ta = e.target.closest && e.target.closest(".rd-ta");
     if (ta && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches) { e.preventDefault(); addItem(ta.closest("[data-rd]")); } });
+  /* a screenshot pasted into the box joins the next fix */
+  document.addEventListener("paste", e => { const ta = e.target.closest && e.target.closest(".rd-ta"); if (!ta) return;
+    const f = [...((e.clipboardData || {}).items || [])].find(i => i.kind === "file"); if (!f) return;
+    e.preventDefault(); const b = f.getAsFile(); setPend(ta.closest("[data-rd]"), b, b.name && b.name !== "image.png" ? b.name : "צילום מסך.png"); });
+  document.addEventListener("change", e => { const inp = e.target.closest && e.target.closest(".rd-file"); if (!inp) return; const f = inp.files[0]; if (f) setPend(inp.closest("[data-rd]"), f, f.name); inp.value = ""; });
   document.addEventListener("click", async e => {
     const t = e.target.closest("button"); if (!t) return;
     const card = t.closest("[data-rd]");
     if (t.dataset.rdadd && card) return addItem(card);
+    if (t.dataset.rdmic && card) return recStart(card);
+    if (t.dataset.rdrs) return recStop(false);
+    if (t.dataset.rdrx) return recStop(true);
+    if (t.dataset.rdpx && card) return setPend(card, null);
     if (t.dataset.rdx !== undefined && card) { const [pid, ad] = card.dataset.rd.split("|"), l = draft(pid, ad); l.splice(+t.dataset.rdx, 1); saveDraft(pid, ad, l); return redrawRound(card); }
     if (t.dataset.rdsend && card) return sendRound(card, t);
+    if (t.dataset.rfplay) { t.disabled = true; try { const u = await media(t.dataset.rfplay), a = document.createElement("audio"); a.controls = true; a.src = u; t.replaceWith(a); a.play().catch(() => {}); } catch { t.disabled = false; t.textContent = "לא נטען, נסי שוב"; } return; }
+    if (t.dataset.rffile) { try { const u = await media(t.dataset.rffile), a = document.createElement("a"); a.href = u; a.download = t.dataset.name || "file"; a.click(); } catch {} return; }
     if (t.dataset.rdone && ME) { t.disabled = true;
       try { const r = await post({action: "round-done", key: KEY, at: +t.dataset.rdone, v: VK}); if (!r || !r.ok) throw 0; const x = ROUNDS.find(y => y.at === +t.dataset.rdone); if (x) x.status = "done"; t.outerHTML = `<span class="rd-st ok">✓ טופל</span>`; }
       catch { t.disabled = false; t.textContent = "לא נשמר, נסי שוב"; } }
