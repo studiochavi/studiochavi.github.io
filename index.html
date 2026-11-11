@@ -313,6 +313,39 @@ img.av{background:#fff;object-fit:cover}
 .ch-tgb img,.ch-tgp{width:30px;height:38px;object-fit:cover;border-radius:5px;flex:none;background:var(--surface-2);display:block}
 .pg-final{font-size:12.5px;font-weight:600;color:inherit;white-space:nowrap}
 
+/* revision rounds (11.11): one quiet box per piece of work, like a checklist */
+.rd{margin:14px 0 4px;border:1px solid var(--line);border-radius:22px;background:var(--surface);padding:18px 18px 14px}
+.rd-top{display:flex;align-items:center;gap:8px}
+.rd-top h3{margin:0;font-size:17px;font-weight:600}
+.rd-sub{margin:4px 0 12px;color:var(--muted);font-size:14px}
+.rd-card{border:1px solid var(--line);border-radius:18px;background:var(--surface-2,#F6F4F2);padding:14px 16px;margin-top:10px}
+.rd-card.done{background:var(--surface)}
+.rd-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rd-h b{font-size:15.5px}
+.rd-st{font-size:12px;font-weight:600;border-radius:999px;padding:2px 10px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.rd-st.sent{background:#FFF4DC;border-color:#F2DFAE;color:#8A6412}
+.rd-st.ok{background:#E8EEE8;border-color:#D3E0D4;color:#3F6A4F}
+.rd-last{font-size:12px;color:var(--muted)}
+.rd-items{margin:10px 0 2px;padding-inline-start:22px;display:flex;flex-direction:column;gap:6px;line-height:1.6}
+.rd-items.edit li{display:list-item}
+.rd-items.edit li span{white-space:pre-wrap}
+.rd-x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:13px;margin-inline-start:8px;padding:0 4px}
+.rd-x:hover{color:#8E3B32}
+.rd-empty{margin:10px 0 4px;color:var(--muted);font-size:14.5px}
+.rd-add{display:flex;align-items:center;gap:10px;margin-top:10px}
+.rd-ta{flex:1;font:inherit;font-size:15px;border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--surface);color:var(--ink);resize:vertical;min-height:52px}
+.rd-ta:focus{outline:2px solid var(--accent,#9C8A72);outline-offset:1px}
+.rd-plus{width:44px;height:44px;border-radius:50%;border:0;background:#8A8680;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.rd-send{display:inline-flex;align-items:center;gap:8px;margin-top:12px;border:0;border-radius:999px;background:#1A1A1A;color:#fff;font:inherit;font-weight:600;font-size:15px;padding:11px 22px;cursor:pointer}
+.rd-send:disabled{opacity:.4;cursor:default}
+.rd-hint{margin:8px 0 0;font-size:12.5px;color:var(--muted)}
+.rd-msg{font-size:13.5px;margin-top:6px}.rd-msg.warn{color:#8E3B32}
+.rd-note{margin:12px 2px 0;font-size:14px;color:var(--muted);line-height:1.6}
+.rd-who{display:block;margin-top:6px;color:var(--muted);font-size:12.5px}
+.rd-mark{border:1px solid var(--line);background:var(--surface);border-radius:999px;font:inherit;font-size:12.5px;padding:3px 12px;cursor:pointer;margin-inline-start:auto}
+.rd-q{display:inline-flex;align-items:center;gap:6px;margin-top:12px;font-size:13.5px;color:var(--muted);text-decoration:none}
+.rd-q:hover{color:var(--ink);text-decoration:underline}
+
 </style>
 </head><body>
 
@@ -337,7 +370,7 @@ const post = o => fetch(EXEC, {method: "POST", body: JSON.stringify(o)}).then(r 
 let J = null, failed = false;
 for (let i = 0; i < 2 && KEY && !J; i++) { try { J = await api("pd=" + encodeURIComponent(KEY) + vq()); failed = false; } catch { failed = true; await new Promise(r => setTimeout(r, 1500)); } }
 if (!J || !J.ok) { $root.innerHTML = `<p class="pt-empty" style="text-align:center;padding:60px 0">${failed ? "לא הצלחתי להתחבר כרגע. בדקי את החיבור ורענני את הדף." : "הקישור הזה לא פעיל. בקשי מחוי קישור חדש."}</p>`; return; }
-const DATA = J.data, ME = !!J.studio; let NOTES = J.notes || [];
+const DATA = J.data, ME = !!J.studio; let NOTES = J.notes || [], ROUNDS = J.rounds || [];
 document.title = (ME ? "צ׳אט · " : "") + DATA.client.name + " · מעקב עבודה";
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const pd = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
@@ -375,33 +408,16 @@ const wantsNotes = p => { const s = p.stages[curIdx(p)]; return !p._done && ((s 
 const LSK = id => "studio-notes-v2-" + (id || "");  /* v2: the trial notes from 27.10 are left behind */
 const readLog = id => { try { return JSON.parse(localStorage.getItem(LSK(id)) || "[]"); } catch { return []; } };
 const writeLog = (id, l) => { try { localStorage.setItem(LSK(id), JSON.stringify(l.slice(-30))); } catch {} };
-/* the chat with the studio: text, voice recordings, pictures and files, both ways.
-   Every note goes straight to the script (Chavi also gets the client's notes by email); her answers show up here by themselves. */
+/* revision rounds instead of a chat (her decision, 11.11): next to every piece of work that was sent, the client lists all fixes
+   and sends them together as one round. Two rounds are included. A question that is not a fix goes by email. */
 const when = at => { const d = new Date(at), t = `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`, n = new Date(); n.setHours(0,0,0,0);
   const x = new Date(at); x.setHours(0,0,0,0); const k = Math.round((n - x) / 864e5); return k <= 0 ? "היום " + t : k === 1 ? "אתמול " + t : `${d.getDate()}.${d.getMonth()+1} · ${t}`; };
-const dur = s => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, "0")}`;
-const linkify = h => h.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.length > 44 ? u.slice(0, 44) + "…" : u}</a>`);
-const SVG = (d, w = 22) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-const I_MIC = SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>');
-const I_CLIP = SVG('<path d="M20 11.5l-7.8 7.8a5 5 0 0 1-7.1-7.1l8.2-8.2a3.4 3.4 0 0 1 4.8 4.8l-8.2 8.2a1.7 1.7 0 0 1-2.4-2.4l7.4-7.4"/>');
-const I_SEND = SVG('<path d="M20 4L9.5 14.5M20 4l-6.5 16-4-5.5L4 10.5z"/>');
-const I_STOP = SVG('<rect x="6" y="6" width="12" height="12" rx="2.5"/>');
-const I_PLAY = SVG('<path d="M8 5.5v13l10.5-6.5z"/>', 18);
-
-const openPs = () => ps.filter(p => !p._done);
-const defPid = () => { const o = openPs(); return (o.find(wantsNotes) || o[0] || ps[0] || {}).id || ""; };
-/* what a message can be about: every ad still open, or a project with no ad yet, and "all of them" when there is more than one */
-const chatTargets = () => { const o = openPs(), out = [];
-  o.forEach(p => { const ads = adsOf(p).filter(a => !adDone(p, a));
-    if (ads.length) ads.forEach(a => out.push({pid: p.id, tag: a.label || p.title, a}));
-    else out.push({pid: p.id, tag: p.title, a: null}); });
-  /* once ads were sent, those are the choices: a project with nothing sent yet is not offered next to them */
-  return out.some(t => t.a) ? out.filter(t => t.a) : out; };
-let CHT = -1;   // the chosen target; -1 = all of them
-const chatPid = () => { const l = chatTargets(), t = l[CHT] || l[0]; return t ? t.pid : defPid(); };
-const chatTag = () => { const l = chatTargets(); return l.length < 2 ? "" : l[CHT] ? l[CHT].tag : "כל המודעות"; };
-const ptitle = id => (ps.find(p => p.id === id) || {}).title || "";
-const mine = n => (n.from === "studio") === ME;   // this side of the chat
+const SVG = (d, w = 20) => `<svg viewBox="0 0 24 24" width="${w}" height="${w}" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const I_SEND = SVG('<path d="M20 4L9.5 14.5M20 4l-6.5 16-4-5.5L4 10.5z"/>', 18);
+const I_PLUS = SVG('<path d="M12 5v14M5 12h14"/>', 22);
+const I_LIST = SVG('<path d="M10 6h10M10 12h10M10 18h10M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5M3.5 18l1.5 1.5 2.5-2.5"/>', 20);
+const I_MAIL = SVG('<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 6.5l8.5 6 8.5-6"/>', 16);
+const ROUNDS_MAX = 2;
 
 /* files live in Drive behind the script; each one is fetched once, when it is needed */
 const MEDIA = new Map();
@@ -412,166 +428,101 @@ async function media(id){
   const bin = atob(j.b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
   const url = URL.createObjectURL(new Blob([u8], {type: j.mime})); MEDIA.set(id, url); return url;
 }
-function fileHtml(f){
-  if (f.kind === "audio") return MEDIA.has(f.id) ? `<audio controls preload="metadata" src="${MEDIA.get(f.id)}"></audio>`
-    : `<button type="button" class="ch-play" data-fid="${esc(f.id)}">${I_PLAY}<span>הודעה קולית${f.dur ? " · " + dur(f.dur) : ""}</span></button>`;
-  if (f.kind === "image") return MEDIA.has(f.id) ? `<a href="${MEDIA.get(f.id)}" target="_blank" rel="noopener"><img class="ch-pic" src="${MEDIA.get(f.id)}" alt="תמונה"></a>`
-    : `<span class="ch-pic wait" data-img="${esc(f.id)}">🖼 טוען תמונה…</span>`;
-  return `<button type="button" class="ch-filebtn" data-fid="${esc(f.id)}" data-name="${esc(f.name)}">📎 ${esc(f.name)}</button>`;
-}
-function bubble(n){
-  const me = mine(n), who = n.from === "studio" ? (DATA.studio || "חוי") : (c.contact || c.name);
-  const proj = ps.length > 1 && n.pid && ptitle(n.pid) ? esc(ptitle(n.pid)) + " · " : "";
-  const read = me ? (n.readAt ? ` · <span class="ch-read">✓ נקרא</span>` : " · נשלח") : "";
-  return `<div class="ch-m ${me ? "me" : "them"}"><div class="ch-b">${n.f ? fileHtml(n.f) : ""}${n.ad ? `<span class="ch-tag">${esc(n.ad)}</span>` : ""}${n.t ? `<div class="ch-t">${linkify(esc(n.t))}</div>` : ""}${n.tr ? `<div class="ch-tr"><span>תמלול אוטומטי, רק את רואה</span>${esc(n.tr)}</div>` : ""}
-    <small>${n.who ? esc(n.who) + " · " : me ? "" : esc(who) + " · "}${proj}${when(n.at)}${read}</small></div></div>`;
-}
-const logHtml = () => NOTES.length ? NOTES.map(bubble).join("")
-  : `<p class="ch-empty">${ME ? "עוד אין הודעות עם הלקוח." : "עוד אין הודעות. אפשר לכתוב לי כאן כל שאלה או הערה, להקליט הודעה קולית 🎤 או לצרף תמונה וצילום מסך."}</p>`;
 
-/* inside a project that waits for notes: a short way down to the chat, already set to that project */
-function chatBlock(p){
-  if (ME || !wantsNotes(p)) return "";
-  return `<a class="ch-jump" href="#chat" data-pid="${esc(p.id)}">✎ יש הערות או תיקונים? כתבי או הקליטי לי בצ׳אט ↓</a>`;
-}
 /* the ads she sent, side by side: pictures come from Drive through the script. An ad sent before this page keeps its picture inside the data */
-const adsOf = p => (p.ads || []).length ? p.ads : p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [];   // an older single picture gives way once ads were sent the new way
+const adsOf = p => (p.ads || []).length ? p.ads : p.ad && p.ad.img ? [{key: "old", label: "", img: p.ad.img, status: p.ad.status, sentOn: p.ad.sentOn}] : [];
 const adDone = (p, a) => a.status === "approved" || (p.adStates && p.adStates[a.key]) === "approved";
+const ymd = at => { const d = new Date(at); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const roundsOf = (pid, ad) => ROUNDS.filter(r => r.pid === pid && (r.ad || "") === (ad || "")).sort((a, b) => a.n - b.n);
+/* a round is handled when she marked it, when its stage in the work is done, or when a newer version of the ad went out after it */
+const stageDone = (p, n) => (p.stages || []).some(s => s.done && new RegExp("סבב\\s*(תיקונים\\s*)?" + n + "(\\D|$)").test(s.name || ""));
+const roundClosed = (p, r, a) => r.status === "done" || stageDone(p, r.n) || !!(a && a.sentOn && a.sentOn > ymd(r.at));
+/* without a picture in the portal, the box shows once the work reached its first round of fixes */
+const inRevision = p => { const st = p.stages || [], i = st.findIndex(s => /סבב|תיקונים|שינויים ודיוקים/.test(s.name || "")); return i > 0 && st.slice(0, i).every(s => s.done) && !st.every(s => s.done); };
+
+const dKey = (pid, ad) => "ava-rd-" + KEY + "-" + pid + "-" + (ad || "");
+const draft = (pid, ad) => { try { return JSON.parse(localStorage.getItem(dKey(pid, ad)) || "[]"); } catch { return []; } };
+const saveDraft = (pid, ad, l) => { try { localStorage.setItem(dKey(pid, ad), JSON.stringify(l)); } catch {} };
+const mailQ = (p, ad) => `mailto:${esc(DATA.email || "studiochavi1@gmail.com")}?subject=${encodeURIComponent("שאלה על " + (ad || p.title))}`;
+
+function roundsBox(p, a){
+  const ad = (a && a.label) || "", list = roundsOf(p.id, ad), last = list[list.length - 1], used = list.length;
+  const waiting = last && !roundClosed(p, last, a), canNew = !ME && !waiting && used < ROUNDS_MAX;
+  const st = r => roundClosed(p, r, a) ? `<span class="rd-st ok">✓ טופל</span>` : `<span class="rd-st sent">נשלח ${when(r.at)} · בטיפול</span>`;
+  const sent = list.map(r => `<div class="rd-card done"><div class="rd-h"><b>סבב תיקונים ${r.n}</b>${st(r)}${ME && !roundClosed(p, r, a) ? `<button type="button" class="rd-mark" data-rdone="${r.at}">✓ סימון שטופל</button>` : ""}</div>
+      <ol class="rd-items">${r.items.map(x => `<li>${esc(x)}</li>`).join("")}</ol>${r.who ? `<small class="rd-who">נשלח על ידי ${esc(r.who)}</small>` : ""}</div>`).join("");
+  const n = used + 1, items = draft(p.id, ad), id = `${p.id}|${ad}`;
+  const composer = canNew ? `<div class="rd-card" data-rd="${esc(id)}"><div class="rd-h"><b>סבב תיקונים ${n}</b><span class="rd-st">עדיין לא נשלח</span>${n === ROUNDS_MAX ? `<span class="rd-last">הסבב האחרון שכלול</span>` : ""}</div>
+      ${items.length ? `<ol class="rd-items edit">${items.map((x, i) => `<li><span>${esc(x)}</span><button type="button" class="rd-x" data-rdx="${i}" aria-label="מחיקת התיקון">✕</button></li>`).join("")}</ol>` : `<p class="rd-empty">אין עדיין תיקונים בסבב הזה.</p>`}
+      <div class="rd-add"><textarea rows="2" maxlength="1500" class="rd-ta" placeholder="תיקון חדש... (Enter להוספה)" aria-label="תיקון חדש"></textarea><button type="button" class="rd-plus" data-rdadd="1" aria-label="הוספת התיקון לרשימה" title="הוספה לרשימה">${I_PLUS}</button></div>
+      <button type="button" class="rd-send" data-rdsend="1" ${items.length ? "" : "disabled"}>${I_SEND}<span>שליחת הסבב לטיפול</span></button>
+      <p class="rd-hint">עד שלא שולחים - כל מה שנכתב כאן נשמר, ואף אחד לא מתחיל לעבוד עליו.</p><div class="rd-msg" role="status"></div></div>` : "";
+  const after = !ME && waiting ? `<p class="rd-note">קיבלתי את התיקונים ואני עובדת עליהם. כשתגיע גרסה מתוקנת${used < ROUNDS_MAX ? ", אפשר יהיה לפתוח כאן את הסבב הבא" : ""}.</p>`
+    : !ME && used >= ROUNDS_MAX ? `<p class="rd-note">שני סבבי התיקונים הכלולים נוצלו. תיקונים נוספים אפשריים בתוספת תשלום, אפשר לכתוב לי במייל.</p>` : "";
+  if (!list.length && !canNew) return "";
+  return `<section class="rd" aria-label="תיקונים${ad ? " · " + esc(ad) : ""}"><div class="rd-top">${I_LIST}<h3>תיקונים${ad ? ` · ${esc(ad)}` : ""}</h3></div>
+    <p class="rd-sub">${ME ? "הסבבים שהלקוח שלח. סימון ✓ אומר ללקוח שהסבב טופל." : "כותבים כאן את כל התיקונים, ושולחים אותם יחד כשהרשימה מלאה. כלולים שני סבבי תיקונים."}</p>
+    ${sent}${composer}${after}${ME ? "" : `<a class="rd-q" href="${mailQ(p, ad)}">${I_MAIL}<span>שאלה שאינה תיקון? כתבי לי במייל</span></a>`}</section>`;
+}
+
+/* inside a project: the pieces of work that were sent with their rounds; with nothing sent to the portal yet, one box for the project once it reached fixes */
+function chatBlock(p){ return p._done ? "" : inRevision(p) || roundsOf(p.id, "").length ? roundsBox(p, null) : ""; }
 function adsBlock(p){
   const all = adsOf(p); if (!all.length) return chatBlock(p);
-  /* ads already closed wait below under one arrow; a finished project is already folded, so it shows them all */
   const closed = p._done ? [] : all.filter(a => adDone(p, a)), list = all.filter(a => !closed.includes(a)), many = list.length > 1;
   const fig = a => `<figure class="pa-fig">
       ${a.img ? `<a href="${a.img}" target="_blank" rel="noopener"><img src="${a.img}" alt="${esc(a.label || "המודעה")}"></a>` : `<a class="pa-wait" data-adimg="${esc(a.fid)}" target="_blank" rel="noopener" aria-label="${esc(a.label || "המודעה")}"><span>טוען…</span></a>`}
-      <figcaption>${a.label ? `<b>${esc(a.label)}</b>` : ""}<span class="pt-ad-st ${adDone(p, a) ? "ok" : ""}">${adDone(p, a) ? "✓ אושרה" : "● ממתינה לאישורך"}</span>${a.sentOn ? `<small>נשלחה ב־${dm(a.sentOn)}</small>` : ""}
-      ${!ME && a.label && !adDone(p, a) ? `<a class="ch-jump pa-note" href="#chat" data-pid="${esc(p.id)}" data-ad="${esc(a.label)}">✎ הערות על המודעה הזו</a>` : ""}</figcaption></figure>`;
-  return `<section class="pa ${many ? "many" : ""}">${list.length ? `<div class="pa-grid">${list.map(fig).join("")}</div>` : ""}
-    ${many ? `<p class="pa-all">אפשר לכתוב לי הערה על מודעה אחת, או על כולן יחד.</p>` : ""}${chatBlock(p)}
+      <figcaption>${a.label ? `<b>${esc(a.label)}</b>` : ""}<span class="pt-ad-st ${adDone(p, a) ? "ok" : ""}">${adDone(p, a) ? "✓ אושרה" : "● ממתינה לאישורך"}</span>${a.sentOn ? `<small>נשלחה ב־${dm(a.sentOn)}</small>` : ""}</figcaption></figure>`;
+  /* with one ad the label is not needed: its rounds are kept under an empty label, so older single-ad rounds still match */
+  const boxes = p._done ? "" : list.map(a => roundsBox(p, many ? a : {...a, label: ""})).join("");
+  return `<section class="pa ${many ? "many" : ""}">${list.length ? `<div class="pa-grid">${list.map(fig).join("")}</div>` : ""}${boxes}
     ${closed.length ? `<details class="pa-fold"><summary>מודעות שנסגרו · ${closed.length}</summary><div class="pa-grid closed">${closed.map(fig).join("")}</div></details>` : ""}</section>`;
 }
 function loadAdImgs(){
   document.querySelectorAll("[data-adimg]").forEach(el => media(el.dataset.adimg).then(u => { el.href = u; el.classList.remove("pa-wait"); el.innerHTML = `<img src="${u}" alt="${esc(el.getAttribute("aria-label") || "המודעה")}">`; }).catch(() => { el.querySelector("span").textContent = "התמונה לא נטענה. נסי לרענן."; }));
 }
-/* several people share one link: each message says who wrote it; this browser remembers the name */
-const WHO_KEY = "ava-who-" + KEY, people = () => ME ? [] : ((DATA.client || {}).people || []);
-let CHW = ""; try { CHW = localStorage.getItem(WHO_KEY) || ""; } catch {}
-function drawWho(){ const el = document.getElementById("ch-who"); if (!el) return; const l = people(); el.hidden = l.length < 2; if (l.length < 2) return; if (!l.includes(CHW)) CHW = "";
-  el.innerHTML = `<span class="ch-tgl">מי כותבת?</span>` + l.map(n => `<button type="button" class="ch-tgb" data-who="${esc(n)}" aria-pressed="${CHW === n}"><span>${esc(n)}</span></button>`).join(""); }
-function drawTargets(){ const el = document.getElementById("ch-tg"); if (!el) return; const l = chatTargets(); el.hidden = l.length < 2; if (l.length < 2) { el.innerHTML = ""; return; }
-  const btn = (i, label, pic) => `<button type="button" class="ch-tgb" data-tg="${i}" aria-pressed="${CHT === i}">${pic}<span>${esc(label)}</span></button>`;
-  el.innerHTML = `<span class="ch-tgl">על מה ההודעה?</span>` + btn(-1, "כל המודעות", "") + l.map((t, i) => btn(i, t.tag, t.a ? (t.a.img ? `<img src="${t.a.img}" alt="">` : `<span class="ch-tgp" data-tgimg="${esc(t.a.fid)}"></span>`) : "")).join("");
-  el.querySelectorAll("[data-tgimg]").forEach(sp => media(sp.dataset.tgimg).then(u => { sp.outerHTML = `<img src="${u}" alt="">`; }).catch(() => {})); }
-function chatCard(){
-  return `<section class="pt-chat" id="chat"><div class="ch-head"><h2>צ׳אט עם ${ME ? esc(c.contact || c.name) : esc(DATA.studio || "חוי")}</h2>${ME ? `<span class="pill warn">מצב סטודיו · הלקוח רואה את מה שתשלחי</span>` : ""}</div>
-    <div class="ch-log" id="ch-log" aria-live="polite">${logHtml()}</div>
-    <div class="ch-tg" id="ch-who" role="group" aria-label="מי כותבת" hidden></div>
-    <div class="ch-tg" id="ch-tg" role="group" aria-label="על מה ההודעה" hidden></div>
-    <div class="ch-att" id="ch-att" hidden></div>
-    <div class="ch-comp" id="ch-comp">
-      <label class="ch-ic" title="צירוף תמונה או קובץ"><input type="file" id="ch-file" accept="image/*,application/pdf,audio/*" hidden>${I_CLIP}<span class="sr">צירוף תמונה או קובץ</span></label>
-      <textarea id="ch-ta" rows="1" maxlength="4000" aria-label="הודעה" placeholder="${ME ? "תשובה ללקוח…" : "כתבי הודעה…"}"></textarea>
-      <button type="button" class="ch-ic" id="ch-mic" title="הקלטה קולית" aria-label="הקלטה קולית">${I_MIC}</button>
-      <button type="button" class="ch-send" id="ch-send" aria-label="שליחה" title="שליחה">${I_SEND}</button>
-    </div>
-    <div class="ch-rec" id="ch-rec" hidden><span class="ch-dot" aria-hidden="true"></span><span id="ch-rt">0:00</span><span class="ch-rl">מקליטה…</span>
-      <button type="button" class="ch-x" id="ch-rx">ביטול</button><button type="button" class="ch-stop" id="ch-rs">${I_STOP}<span>סיום</span></button></div>
-    <div class="ch-done" id="ch-note" role="status" hidden></div></section>`;
-}
+/* no general chat any more: the page keeps its place in the code so the rest of the page needs no change */
+function chatCard(){ return ""; }
 
-let ATT = null;   // what goes with the next message: {blob, name, mime, dur, url}
-const note = (t, bad) => { const el = document.getElementById("ch-note"); if (!el) return; el.hidden = !t; el.textContent = t || ""; el.classList.toggle("warn", !!bad); };
-function showAtt(){
-  const el = document.getElementById("ch-att"); if (!el) return;
-  if (!ATT) { el.hidden = true; el.innerHTML = ""; return; }
-  el.hidden = false;
-  el.innerHTML = `<button type="button" class="ch-del" id="ch-ax" title="הסרה" aria-label="הסרה">✕</button>`
-    + (ATT.mime.startsWith("audio/") ? `<audio controls src="${ATT.url}"></audio>` : ATT.mime.startsWith("image/") ? `<img src="${ATT.url}" alt="">` : `<span>📎 ${esc(ATT.name)}</span>`)
-    + `<button type="button" class="ch-send" id="ch-send2" aria-label="שליחה" title="שליחה">${I_SEND}</button>`;
+function redrawRound(card){
+  const [pid, ad] = card.dataset.rd.split("|"), p = ps.find(x => x.id === pid); if (!p) return;
+  const open = adsOf(p).filter(x => !adDone(p, x)), one = !ad && open.length === 1 ? {...open[0], label: ""} : null;
+  const a = ad ? adsOf(p).find(x => x.label === ad) : one, box = card.closest(".rd"), html = roundsBox(p, a || (ad ? {label: ad} : null));
+  if (box) { const t = document.createElement("div"); t.innerHTML = html; const nb = t.firstElementChild; if (nb) box.replaceWith(nb); else box.remove(); }
 }
-function setAtt(blob, name, d){
-  if (ATT) URL.revokeObjectURL(ATT.url);
-  if (blob && blob.size > 10 * 1024 * 1024) { ATT = null; showAtt(); note("הקובץ גדול מדי (עד 10MB). אפשר לשלוח אותו במייל.", true); return; }
-  ATT = blob ? {blob, name: name || "", mime: blob.type || "application/octet-stream", dur: d || 0, url: URL.createObjectURL(blob)} : null;
-  showAtt(); note("");
+function addItem(card){
+  const ta = card.querySelector(".rd-ta"), v = ta.value.trim(); if (!v) { ta.focus(); return; }
+  const [pid, ad] = card.dataset.rd.split("|"), l = draft(pid, ad); l.push(v); saveDraft(pid, ad, l);
+  redrawRound(card); const nc = document.querySelector(`[data-rd="${CSS.escape(card.dataset.rd)}"] .rd-ta`); if (nc) nc.focus();
 }
-function drawLog(force){
-  const el = document.getElementById("ch-log"); if (!el) return;
-  if (!force && [...el.querySelectorAll("audio")].some(a => !a.paused)) return;   // never cut a recording that is playing
-  const atEnd = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
-  el.innerHTML = logHtml();
-  el.querySelectorAll("[data-img]").forEach(s => media(s.dataset.img).then(u => { s.outerHTML = `<a href="${u}" target="_blank" rel="noopener"><img class="ch-pic" src="${u}" alt="תמונה"></a>`; }).catch(() => { s.textContent = "🖼 התמונה לא נטענה"; }));
-  if (atEnd || force) el.scrollTop = el.scrollHeight;
-}
-const b64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(",")[1]); r.onerror = no; r.readAsDataURL(blob); });
-async function send(){
-  const ta = document.getElementById("ch-ta"), btn = document.getElementById("ch-send"), btn2 = document.getElementById("ch-send2"), t = ta.value.trim();
-  if (!t && !ATT) { ta.focus(); return; }
-  if (people().length > 1 && !CHW) { note("בחרי קודם מי כותבת, כדי שאדע ממי ההודעה.", true); document.getElementById("ch-who").scrollIntoView({block: "nearest"}); return; }
-  btn.disabled = true; if (btn2) btn2.disabled = true; note(ATT ? "שולחת… (קובץ או הקלטה לוקחים כמה שניות)" : "");
+async function sendRound(card, btn){
+  const [pid, ad] = card.dataset.rd.split("|"), pending = card.querySelector(".rd-ta").value.trim(), l = draft(pid, ad);
+  if (pending) { l.push(pending); saveDraft(pid, ad, l); }
+  if (!l.length) return;
+  const msg = card.querySelector(".rd-msg"); btn.disabled = true; msg.textContent = "שולחת…"; msg.classList.remove("warn");
   try {
-    const o = {action: "msg", key: KEY, pid: chatPid(), t, ad: chatTag(), who: CHW};
-    if (VK) o.v = VK;
-    if (ATT) o.f = {b64: await b64(ATT.blob), mime: ATT.mime, name: ATT.name, dur: ATT.dur};
-    const r = await post(o);
+    const r = await post({action: "round", key: KEY, pid, ad, items: l});
     if (!r || !r.ok) throw new Error((r && r.error) || "x");
-    if (ATT && r.note.f) MEDIA.set(r.note.f.id, ATT.url), ATT = null;   // the file is already here: no need to fetch it back
-    NOTES.push(r.note); ta.value = ""; ta.style.height = ""; setAtt(null); drawLog(true);
-    note(ME ? "✓ נשלח. הלקוח יראה את זה כשייכנס לפורטל." : "✓ נשלח. ההודעה הגיעה אליי, אחזור אלייך בהקדם.");
+    ROUNDS.push(r.round); saveDraft(pid, ad, []); redrawRound(card);
   } catch (e) {
-    note(String(e.message) === "too big" ? "הקובץ גדול מדי. אפשר לשלוח אותו במייל." : String(e.message) === "too many" ? "נשלחו הרבה הודעות בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. בדקי את החיבור ונסי שוב.", true);
-  } finally { btn.disabled = false; if (btn2) btn2.disabled = false; }
+    btn.disabled = false; msg.classList.add("warn");
+    msg.textContent = String(e.message) === "limit" ? "שני הסבבים הכלולים כבר נשלחו. לתיקונים נוספים אפשר לכתוב לי במייל." : String(e.message) === "too many" ? "נשלח הרבה בזמן קצר. נסי שוב בעוד כמה דקות." : "השליחה לא הצליחה. התיקונים נשמרו כאן, נסי שוב בעוד רגע.";
+  }
 }
-
-/* voice: the browser records in its own format (webm in Chrome and Android, mp4 on iPhone); up to 5 minutes */
-let REC = null;
-async function recStart(){
-  if (!navigator.mediaDevices || !window.MediaRecorder) { note("הדפדפן הזה לא מאפשר הקלטה. אפשר לכתוב, או לצרף קובץ שמע מהטלפון.", true); return; }
-  let stream; try { stream = await navigator.mediaDevices.getUserMedia({audio: true}); }
-  catch { note("אין גישה למיקרופון. צריך לאשר לדפדפן להשתמש במיקרופון ולנסות שוב.", true); return; }
-  const type = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm", "audio/ogg;codecs=opus"].find(t => MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) || "";
-  const mr = new MediaRecorder(stream, type ? {mimeType: type, audioBitsPerSecond: 48000} : undefined), parts = [], t0 = Date.now();
-  REC = {mr, stream, t0, cancel: false, tick: setInterval(() => { const s = (Date.now() - t0) / 1000; document.getElementById("ch-rt").textContent = dur(s); if (s >= 300) recStop(false); }, 250)};
-  mr.ondataavailable = e => { if (e.data && e.data.size) parts.push(e.data); };
-  mr.onstop = () => { const r = REC; REC = null; clearInterval(r.tick); r.stream.getTracks().forEach(x => x.stop());
-    document.getElementById("ch-rec").hidden = true; document.getElementById("ch-comp").hidden = false;
-    if (r.cancel || !parts.length) return;
-    setAtt(new Blob(parts, {type: (mr.mimeType || type || "audio/webm").split(";")[0]}), "", Math.round((Date.now() - r.t0) / 1000));
-  };
-  mr.start(1000);
-  document.getElementById("ch-comp").hidden = true; document.getElementById("ch-rec").hidden = false; note("");
-}
-function recStop(cancel){ if (!REC) return; REC.cancel = cancel; REC.mr.stop(); }
-
 function chatInit(){
-  drawLog(true); drawWho(); drawTargets(); loadAdImgs();
-  const ta = document.getElementById("ch-ta");
-  const grow = () => { ta.style.height = ""; ta.style.height = Math.min(160, ta.scrollHeight + 2) + "px"; };
-  ta.addEventListener("input", grow);
-  /* Enter sends on a computer; on a phone Enter is a new line and the button sends */
-  ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches) { e.preventDefault(); send(); } });
-  ta.addEventListener("paste", e => { const f = [...(e.clipboardData || {}).items || []].find(i => i.kind === "file"); if (f) { e.preventDefault(); const b = f.getAsFile(); setAtt(b, b.name && b.name !== "image.png" ? b.name : "צילום מסך.png"); } });
-  document.getElementById("ch-file").addEventListener("change", e => { const f = e.target.files[0]; if (f) setAtt(f, f.name); e.target.value = ""; });
+  loadAdImgs();
+  document.addEventListener("keydown", e => { const ta = e.target.closest && e.target.closest(".rd-ta");
+    if (ta && e.key === "Enter" && !e.shiftKey && !matchMedia("(pointer:coarse)").matches) { e.preventDefault(); addItem(ta.closest("[data-rd]")); } });
   document.addEventListener("click", async e => {
-    const t = e.target.closest("button, a.ch-jump"); if (!t) return;
-    if (t.id === "ch-send" || t.id === "ch-send2") return send();
-    if (t.id === "ch-mic") return recStart();
-    if (t.id === "ch-rs") return recStop(false);
-    if (t.id === "ch-rx") return recStop(true);
-    if (t.id === "ch-ax") { setAtt(null); return; }
-    if (t.dataset.who !== undefined) { CHW = t.dataset.who; try { localStorage.setItem(WHO_KEY, CHW); } catch {} drawWho(); note(""); return; }
-    if (t.dataset.tg !== undefined) { CHT = +t.dataset.tg; drawTargets(); return; }
-    if (t.classList.contains("ch-jump")) { const l = chatTargets(), own = l.map((x, i) => [x, i]).filter(([x]) => x.pid === t.dataset.pid), hit = own.find(([x]) => x.tag === t.dataset.ad) || (own.length === 1 ? own[0] : null); CHT = hit ? hit[1] : -1; drawTargets(); setTimeout(() => ta.focus({preventScroll: true}), 400); return; }
-    if (t.classList.contains("ch-play")) { t.disabled = true; t.querySelector("span").textContent = "טוען…";
-      try { const u = await media(t.dataset.fid), a = document.createElement("audio"); a.controls = true; a.src = u; t.replaceWith(a); a.play().catch(() => {}); }
-      catch { t.disabled = false; t.querySelector("span").textContent = "לא נטען, נסי שוב"; } return; }
-    if (t.classList.contains("ch-filebtn")) { try { const u = await media(t.dataset.fid), a = document.createElement("a"); a.href = u; a.download = t.dataset.name || "file"; a.click(); } catch { note("הקובץ לא נטען. נסי שוב.", true); } }
+    const t = e.target.closest("button"); if (!t) return;
+    const card = t.closest("[data-rd]");
+    if (t.dataset.rdadd && card) return addItem(card);
+    if (t.dataset.rdx !== undefined && card) { const [pid, ad] = card.dataset.rd.split("|"), l = draft(pid, ad); l.splice(+t.dataset.rdx, 1); saveDraft(pid, ad, l); return redrawRound(card); }
+    if (t.dataset.rdsend && card) return sendRound(card, t);
+    if (t.dataset.rdone && ME) { t.disabled = true;
+      try { const r = await post({action: "round-done", key: KEY, at: +t.dataset.rdone, v: VK}); if (!r || !r.ok) throw 0; const x = ROUNDS.find(y => y.at === +t.dataset.rdone); if (x) x.status = "done"; t.outerHTML = `<span class="rd-st ok">✓ טופל</span>`; }
+      catch { t.disabled = false; t.textContent = "לא נשמר, נסי שוב"; } }
   });
-  /* new notes and "✓ נקרא" arrive by themselves while the page is open */
-  const sig = l => l.map(n => n.at + ":" + (n.readAt ? 1 : 0) + (n.tr ? "t" : "")).join(",");
-  setInterval(async () => {
-    if (document.visibilityState !== "visible" || REC) return;
-    try { const j = await api("pd=" + encodeURIComponent(KEY) + "&n=1" + vq()); if (j && j.ok && sig(j.notes) !== sig(NOTES)) { NOTES = j.notes; drawLog(false); } } catch {}
-  }, 15000);
 }
 
 /* one card per project: progress, the ad, notes, and the project's own payments at the bottom.
