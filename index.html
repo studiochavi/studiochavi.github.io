@@ -456,6 +456,20 @@ img.av{background:#fff;object-fit:cover}
 .v2-next[open] summary::after{transform:rotate(-90deg)}
 .v2-next ol{margin:6px 0 0;padding-inline-start:20px;line-height:1.8}
 .v2-turn h2{font-size:24px}
+/* 11.11 (3): the to-do list in the card, each item with its own way to answer */
+.v2-todo{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:14px;width:100%;counter-reset:td}
+.v2-todo-i{display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.v2-todo.many .v2-todo-i{counter-increment:td;padding-inline-start:38px;position:relative}
+.v2-todo.many .v2-todo-i::before{content:counter(td);position:absolute;inset-inline-start:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--surface);font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.v2-todo.many .v2-todo-i+.v2-todo-i{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);padding-top:14px}
+.v2-todo.many .v2-todo-i+.v2-todo-i::before{top:14px}
+.v2-todo-i.done::before{background:var(--ok)!important;content:"✓"!important}
+.v2-todo-t{display:flex;flex-direction:column;gap:2px}
+.v2-todo-t b{font-family:var(--f-display);font-size:19px;font-weight:500;line-height:1.45}
+.v2-ans{display:flex;gap:8px;align-items:flex-end;width:100%}
+.v2-ans textarea{flex:1;min-width:0;border:1px solid var(--line);border-radius:14px;padding:10px 14px;font:inherit;font-size:15px;background:var(--surface);color:var(--ink);resize:vertical}
+.v2-msg{margin:0;font-size:13px;color:var(--muted)}
+.v2-msg:empty{display:none}
 
 .pt-welcome{max-width:460px;margin:12vh auto 0;padding:0 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 .pt-welcome img{width:96px;height:96px;object-fit:contain;margin-bottom:6px}
@@ -732,12 +746,17 @@ const phaseOf = p => { if (p._done || p.stages.every(sDone)) return 3; const ci 
   if (openAds(p).length || (s && /סבב|תיקון|שינוי|דיוק|אישור/.test(s.name || ""))) return 2; return ci === 0 ? 0 : 1; };
 
 /* what waits for her, one after the other: what the studio asked for, then work to look at and approve */
+/* a request about fixes is the same thing as "approve or send fixes" on the picture, so it is not listed twice */
+const FIXY = /שיפור|תיקון|דיוק|הערות|שינוי/;
 function yourTurn(){
   const out = [];
-  openWorks().forEach(p => (p.waiting || []).forEach(t => out.push({p, k: "ask", t: String(t)})));
-  openWorks().forEach(p => openAds(p).forEach(a => { if (!fixBusy(p, a)) out.push({p, a, k: "look", t: a.label && openAds(p).length > 1 ? `לאשר את ${a.label}, או לשלוח תיקונים` : "לאשר את העיצוב, או לשלוח תיקונים"}); }));
+  openWorks().forEach(p => (p.waiting || []).forEach(t => { if (!(openAds(p).length && FIXY.test(String(t)))) out.push({p, k: "ask", t: String(t)}); }));
+  openWorks().forEach(p => openAds(p).forEach(a => { if (!fixBusy(p, a)) out.push({p, a, k: "look", t: a.label && openAds(p).length > 1 ? `לאשר את ${a.label}, או לבקש תיקונים ודיוקים` : "לאשר את העיצוב, או לבקש תיקונים ודיוקים"}); }));
   return out;
 }
+/* an answer she already sent from this page to a request (kept in the notes with the request as its tag) */
+const ansTag = t => ("מענה: " + t).slice(0, 80);
+const answered = x => NOTES.some(n => n.pid === x.p.id && n.ad === ansTag(x.t) && n.from !== "studio");
 function statusLine(turn){
   const first = String(c.contact || c.name || "").trim().split(/\s+/)[0];
   let say = "";
@@ -747,13 +766,18 @@ function statusLine(turn){
     say = `<span class="v2-okc">הכול אצלי ✓</span> ${busy ? "קיבלתי את התיקונים ואני עובדת עליהם" : `אני עובדת על ${esc(p.title)}`}${p.deadline ? `. המסירה מתוכננת ל${dayDM(p.deadline)}` : ""}.`; }
   return `<header class="v2-head"><h1>שלום ${esc(first)}</h1>${say ? `<p class="v2-say">${say}</p>` : ""}</header>`;
 }
+/* everything she needs to do, each with its own way to do it right here: a short answer box, or a jump to the picture */
 function turnCard(turn){
   if (!turn.length) return "";
-  const x = turn[0], mail = `mailto:${esc(DATA.email || "studiochavi1@gmail.com")}?subject=${encodeURIComponent(x.t + " · " + x.p.title)}`;
-  const btn = x.k === "ask" ? `<a class="v2-btn pri" href="${mail}">לשלוח לי במייל</a>` : `<button type="button" class="v2-btn pri" data-v2go="${esc(x.p.id)}">לצפייה ולאישור</button>`;
   const many = openWorks().length > 1;
-  return `<section class="v2-turn"><span class="v2-tag">התור שלך${turn.length > 1 ? ` · 1 מתוך ${turn.length}` : ""}</span><h2>${esc(x.t)}</h2>${many ? `<p class="v2-m">${esc(x.p.title)}</p>` : ""}${btn}
-    ${turn.length > 1 ? `<details class="v2-next"><summary>ועוד ${turn.length - 1} אחר כך</summary><ol>${turn.slice(1).map(y => `<li>${esc(y.t)}</li>`).join("")}</ol></details>` : ""}</section>`;
+  const item = (x, i) => {
+    const sub = many ? `<small class="v2-m">${esc(x.p.title)}</small>` : "";
+    if (x.k === "look") return `<li class="v2-todo-i"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}</div><button type="button" class="v2-btn pri sm" data-v2go="${esc(x.p.id)}">לצפייה בעיצוב ↓</button></li>`;
+    if (answered(x)) return `<li class="v2-todo-i done"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}</div><span class="v2-okc">✓ שלחת, תודה!</span></li>`;
+    return `<li class="v2-todo-i"><div class="v2-todo-t"><b>${esc(x.t)}</b>${sub}</div>
+      <div class="v2-ans" data-v2ans="${i}"><textarea rows="2" maxlength="2000" placeholder="${ME ? "תצוגה בלבד: כאן הלקוחה עונה" : "כתבי כאן את התשובה"}" aria-label="התשובה שלך" ${ME ? "disabled" : ""}></textarea>
+        <button type="button" class="v2-btn pri sm" data-v2send="${i}" ${ME ? "disabled" : ""}>שליחה</button></div><p class="v2-msg" role="status"></p></li>`; };
+  return `<section class="v2-turn"><span class="v2-tag">מה מחכה לך</span><ol class="v2-todo ${turn.length > 1 ? "many" : ""}">${turn.map(item).join("")}</ol></section>`;
 }
 const track = p => { const ph = phaseOf(p);
   return `<ol class="v2-track" aria-label="איפה העבודה עומדת">${PHASES.map((n, i) => `<li class="${i < ph ? "done" : i === ph ? "cur" : ""}"><span class="v2-d">${i < ph ? "✓" : ""}</span><span>${n}</span></li>`).join("")}</ol>`; };
@@ -766,7 +790,7 @@ function workCard(p){
     const ap = APPROVALS.find(x => x.pid === p.id && x.key === (a.key || "old"));
     const acts = ok ? `<p class="v2-ok">✓ אישרת${ap ? " · " + dm(ymd(ap.at)) : ""}. תודה!</p>` : busy ? ""
       : `<div class="v2-acts"><button type="button" class="v2-btn pri" data-v2ok="${esc(p.id)}" data-adk="${esc(a.key || "old")}" data-adl="${esc(a.label || "")}">מאשרת ✓</button>
-         <button type="button" class="v2-btn" data-v2fix="${esc(fid)}" aria-expanded="${!!opened}">יש לי תיקונים</button></div>`;
+         <button type="button" class="v2-btn" data-v2fix="${esc(fid)}" aria-expanded="${!!opened}">יש לי תיקונים או דיוקים</button></div>`;
     return `<figure class="v2-fig">${many && a.label ? `<figcaption>${esc(a.label)}</figcaption>` : ""}<div class="v2-img">${img}</div>
       ${a.sentOn && !ok ? `<small class="v2-m">נשלח אלייך ב${dayDM(a.sentOn)}</small>` : ""}${acts}${!ok && opened ? roundsBox(p, many ? a : {...a, label: ""}) : ""}</figure>`; };
   const noAd = () => { if (!(inRevision(p) || roundsOf(p.id, "").length)) return "";
@@ -807,7 +831,15 @@ function newPage(){
 function v2draw(){ const y = scrollY; document.getElementById("root").innerHTML = newPage(); loadAdImgs(); scrollTo(0, y); }
 document.addEventListener("click", async e => {
   if (!NEWUI) return;
-  const t = e.target.closest("[data-v2go],[data-v2fix],[data-v2ok],[data-v2how]"); if (!t) return;
+  const t = e.target.closest("[data-v2go],[data-v2fix],[data-v2ok],[data-v2how],[data-v2send]"); if (!t) return;
+  if (t.dataset.v2send !== undefined) {
+    const x = yourTurn()[+t.dataset.v2send], box = t.closest(".v2-ans"), ta = box.querySelector("textarea"), v = ta.value.trim(), msg = box.parentElement.querySelector(".v2-msg");
+    if (!x || ME) return; if (!v) { ta.focus(); return; }
+    t.disabled = true; msg.textContent = "שולחת…";
+    try { const r = await post({action: "msg", key: KEY, pid: x.p.id, t: v, ad: ansTag(x.t)}); if (!r || !r.ok) throw 0; NOTES.push(r.note || {pid: x.p.id, ad: ansTag(x.t), from: "client", t: v, at: Date.now()}); v2draw(); }
+    catch { t.disabled = false; msg.textContent = "לא נשלח. נסי שוב בעוד רגע."; }
+    return;
+  }
   if (t.dataset.v2how) { try { localStorage.setItem(HKEY, "1"); } catch {} return v2draw(); }
   if (t.dataset.v2go) { const w = document.getElementById("w-" + t.dataset.v2go); if (w) w.scrollIntoView({behavior: "smooth", block: "start"}); return; }
   if (t.dataset.v2fix) { V2OPEN.has(t.dataset.v2fix) ? V2OPEN.delete(t.dataset.v2fix) : V2OPEN.add(t.dataset.v2fix); v2draw();
