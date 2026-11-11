@@ -443,6 +443,20 @@ img.av{background:#fff;object-fit:cover}
 .v2-foot a{color:var(--ink)}
 @media (max-width:560px){.v2-work,.v2-turn{padding:18px}.v2-head h1{font-size:25px}.v2-say{font-size:16px}.v2-track li{font-size:11.5px}}
 
+/* 11.11 (2): a quieter top */
+.v2-head h1{margin:0}
+.v2-how{margin:-8px 0 0;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13.5px;padding:0 6px}
+.v2-how span{flex:1}
+.v2-x{all:unset;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted)}
+.v2-x:hover{background:var(--surface-2)}
+.v2-next{margin-top:4px;font-size:13.5px;color:var(--muted)}
+.v2-next summary{cursor:pointer;list-style:none}
+.v2-next summary::-webkit-details-marker{display:none}
+.v2-next summary::after{content:" ‹";display:inline-block;transition:transform .15s}
+.v2-next[open] summary::after{transform:rotate(-90deg)}
+.v2-next ol{margin:6px 0 0;padding-inline-start:20px;line-height:1.8}
+.v2-turn h2{font-size:24px}
+
 .pt-welcome{max-width:460px;margin:12vh auto 0;padding:0 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
 .pt-welcome img{width:96px;height:96px;object-fit:contain;margin-bottom:6px}
 .pt-welcome h1{font-family:var(--f-display);font-size:30px;font-weight:500;margin:0}
@@ -721,24 +735,25 @@ const phaseOf = p => { if (p._done || p.stages.every(sDone)) return 3; const ci 
 function yourTurn(){
   const out = [];
   openWorks().forEach(p => (p.waiting || []).forEach(t => out.push({p, k: "ask", t: String(t)})));
-  openWorks().forEach(p => openAds(p).forEach(a => { if (!fixBusy(p, a)) out.push({p, a, k: "look", t: `לעבור על ${a.label || p.title} ולאשר, או לשלוח תיקונים`}); }));
+  openWorks().forEach(p => openAds(p).forEach(a => { if (!fixBusy(p, a)) out.push({p, a, k: "look", t: a.label && openAds(p).length > 1 ? `לאשר את ${a.label}, או לשלוח תיקונים` : "לאשר את העיצוב, או לשלוח תיקונים"}); }));
   return out;
 }
 function statusLine(turn){
   const first = String(c.contact || c.name || "").trim().split(/\s+/)[0];
-  let say;
-  if (turn.length) say = `${turn.length === 1 ? "מחכה לך דבר אחד" : `מחכים לך ${turn.length} דברים, אחד אחרי השני`}: <b>${esc(turn[0].t)}</b>`;
+  let say = "";
+  if (turn.length) say = "";
   else if (!openWorks().length) say = `<span class="v2-okc">הכול הושלם ✓</span> תודה! העבודות שלך שמורות כאן למטה.`;
   else { const p = openWorks().slice().sort((a, b) => (a.deadline || "9").localeCompare(b.deadline || "9"))[0], busy = adsOf(p).some(a => fixBusy(p, a)) || roundsOf(p.id, "").some(r => !roundClosed(p, r, null));
     say = `<span class="v2-okc">הכול אצלי ✓</span> ${busy ? "קיבלתי את התיקונים ואני עובדת עליהם" : `אני עובדת על ${esc(p.title)}`}${p.deadline ? `. המסירה מתוכננת ל${dayDM(p.deadline)}` : ""}.`; }
-  return `<header class="v2-head"><h1>שלום ${esc(first)}</h1><p class="v2-say">${say}</p></header>`;
+  return `<header class="v2-head"><h1>שלום ${esc(first)}</h1>${say ? `<p class="v2-say">${say}</p>` : ""}</header>`;
 }
 function turnCard(turn){
   if (!turn.length) return "";
   const x = turn[0], mail = `mailto:${esc(DATA.email || "studiochavi1@gmail.com")}?subject=${encodeURIComponent(x.t + " · " + x.p.title)}`;
   const btn = x.k === "ask" ? `<a class="v2-btn pri" href="${mail}">לשלוח לי במייל</a>` : `<button type="button" class="v2-btn pri" data-v2go="${esc(x.p.id)}">לצפייה ולאישור</button>`;
-  return `<section class="v2-turn"><span class="v2-tag">התור שלך</span><h2>${esc(x.t)}</h2><p class="v2-m">${esc(x.p.title)}</p>${btn}
-    ${turn.length > 1 ? `<p class="v2-next">ואחר כך: ${turn.slice(1).map(y => esc(y.t)).join(" · ")}</p>` : ""}</section>`;
+  const many = openWorks().length > 1;
+  return `<section class="v2-turn"><span class="v2-tag">התור שלך${turn.length > 1 ? ` · 1 מתוך ${turn.length}` : ""}</span><h2>${esc(x.t)}</h2>${many ? `<p class="v2-m">${esc(x.p.title)}</p>` : ""}${btn}
+    ${turn.length > 1 ? `<details class="v2-next"><summary>ועוד ${turn.length - 1} אחר כך</summary><ol>${turn.slice(1).map(y => `<li>${esc(y.t)}</li>`).join("")}</ol></details>` : ""}</section>`;
 }
 const track = p => { const ph = phaseOf(p);
   return `<ol class="v2-track" aria-label="איפה העבודה עומדת">${PHASES.map((n, i) => `<li class="${i < ph ? "done" : i === ph ? "cur" : ""}"><span class="v2-d">${i < ph ? "✓" : ""}</span><span>${n}</span></li>`).join("")}</ol>`; };
@@ -780,13 +795,13 @@ function doneList(){
 }
 const HKEY = "ava-howto-" + KEY;
 const howSeen = () => { try { return localStorage.getItem(HKEY) === "1"; } catch { return false; } };
-const howTo = () => howSeen() ? "" : `<section class="v2-how"><b>ככה זה עובד</b><ol><li>מה שמחכה לך יופיע תמיד כאן למעלה.</li><li>על כל עיצוב אפשר לאשר, או לשלוח תיקונים. כלולים 2 סבבים.</li><li>כדאי לשמור את הקישור: הדף מתעדכן לאורך כל העבודה.</li></ol><button type="button" class="v2-btn sm" data-v2how="1">הבנתי</button></section>`;
+const howTo = () => howSeen() ? "" : `<p class="v2-how"><span>💡 מה שמחכה לך יופיע תמיד כאן. כדאי לשמור את הקישור, הוא מתעדכן לאורך כל העבודה.</span><button type="button" class="v2-x" data-v2how="1" aria-label="סגירה" title="הבנתי">✕</button></p>`;
 function newPage(){
   const turn = yourTurn(), first = turn.length ? turn[0].p.id : "";
   const works = openWorks().slice().sort((a, b) => (b.id === first) - (a.id === first));
   return `<div class="pt v2">${ME ? `<p class="v2-me">תצוגה חדשה · כרגע רק את רואה אותה. הלקוחות רואים עדיין את הדף הקודם.</p>` : ""}
     <div class="v2-brand"><img src="${STUDIO_LOGO}" alt=""><span>חוי מנדל · עיצוב גרפי</span></div>
-    ${statusLine(turn)}${howTo()}${turnCard(turn)}${works.map(workCard).join("")}${payLine()}${doneList()}
+    ${statusLine(turn)}${turnCard(turn)}${howTo()}${works.map(workCard).join("")}${payLine()}${doneList()}
     <footer class="v2-foot">שאלה? <a href="tel:0533134900" dir="ltr">053.313.4900</a> · או <a href="mailto:${esc(DATA.email || "studiochavi1@gmail.com")}">במייל</a></footer></div>`;
 }
 function v2draw(){ const y = scrollY; document.getElementById("root").innerHTML = newPage(); loadAdImgs(); scrollTo(0, y); }
