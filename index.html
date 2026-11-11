@@ -223,6 +223,7 @@ img.av{background:#fff;object-fit:cover}
 .pt .pj-wait b{color:#B3364F;font-size:15px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pt .pj-wait{background:#3D2629;border-color:#5A3439;color:#F3C9CF}:root:not([data-theme="light"]) .pt .pj-wait b{color:#F08A97}}
 :root[data-theme="dark"] .pt .pj-wait{background:#3D2629;border-color:#5A3439;color:#F3C9CF}:root[data-theme="dark"] .pt .pj-wait b{color:#F08A97}
+.pt-doc{color:inherit;text-decoration:underline;text-underline-offset:2px}
 /* the chat card: my notes on the start side, the other side's on the end side; the composer is one rounded row like a messaging app */
 .pt-chat{background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:0;padding:0;margin-top:22px;overflow:hidden;scroll-margin-top:16px}
 .ch-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:16px 20px;border-bottom:1px solid var(--line)}
@@ -642,13 +643,14 @@ function projList(ps, isDone, card){
    paid → a single quiet folded line; the details only for whoever opens it. */
 function payBlock(ps, pays){
   if (!pays.length) return "";
-  const title = y => (ps.find(p => p.id === y.projectId) || {}).title || y.label || "תשלום";
+  const title = y => y.what || (ps.find(p => p.id === y.projectId) || {}).title || y.label || "תשלום";
   const open = pays.filter(y => leftOf(y) > 0), done = pays.filter(y => !(leftOf(y) > 0));
   const left = open.reduce((a,y)=>a+leftOf(y),0), paidDone = done.reduce((a,y)=>a+gross(y),0);
-  const meta = y => [payRef(y), partsSum(y) ? `כבר שולמו ${money(partsSum(y))}` : "", y.due ? "עד " + dm(y.due) : ""].filter(Boolean).map(esc).join(" · ");
+  const refHtml = y => payRef(y) && /^https:\/\//.test(y.docUrl || "") ? `<a class="pt-doc" href="${esc(y.docUrl)}" target="_blank" rel="noopener">${esc(payRef(y))} ↗</a>` : esc(payRef(y));
+  const meta = y => [refHtml(y), partsSum(y) ? esc(`כבר שולמו ${money(partsSum(y))}`) : "", y.due ? esc("עד " + dm(y.due)) : ""].filter(Boolean).join(" · ");
   const due1 = y => `<div class="pt-due"><div><span>לתשלום · ${esc(title(y))}</span><small>${meta(y)}</small></div><div class="pt-due-a"><b>${money(leftOf(y))}</b>${payPill(y)}</div></div>`;
   const openRow = y => `<div class="pt-row"><div class="pt-d"><b>${esc(title(y))}</b><span>${meta(y)}</span></div><div class="pt-a"><b>${money(leftOf(y))}</b></div>${payPill(y)}</div>`;
-  const doneRow = y => `<div class="pt-row"><div class="pt-d"><b>${esc(title(y))}</b><span>${[payRef(y), y.paidOn ? "שולם ב־" + dm(y.paidOn) : ""].filter(Boolean).map(esc).join(" · ")}</span></div><div class="pt-a"><b>${money(gross(y))}</b></div></div>`;
+  const doneRow = y => `<div class="pt-row"><div class="pt-d"><b>${esc(title(y))}</b><span>${[refHtml(y), y.paidOn ? esc("שולם ב־" + dm(y.paidOn)) : ""].filter(Boolean).join(" · ")}</span></div><div class="pt-a"><b>${money(gross(y))}</b></div></div>`;
   return `<section class="pt-pay"><h2>תשלומים</h2>
     ${open.length === 1 ? due1(open[0]) : open.length ? `<div class="pt-due"><div><span>נותר לתשלום</span><small>${open.length} דרישות תשלום</small></div><b>${money(left)}</b></div><div class="pt-list">${open.map(openRow).join("")}</div>` : ""}
     ${done.length ? `<details class="paid-fold ${open.length ? "" : "all"}"><summary>✓ ${open.length ? "שולם עד היום" : "הכול שולם"} · ${money(paidDone)}</summary><div class="pt-list">${done.map(doneRow).join("")}</div></details>` : ""}
