@@ -767,9 +767,9 @@ function statusLine(turn){
   const first = String(c.contact || c.name || "").trim().split(/\s+/)[0];
   let say = "";
   if (turn.length) say = "";
-  else if (!openWorks().length) say = pays.some(y => leftOf(y) > 0) ? `<span class="v2-okc">העבודות הושלמו ✓</span> נשאר רק התשלום, כאן למטה.` : `<span class="v2-okc">הכול הושלם ✓</span> תודה! העבודות שלך שמורות כאן למטה.`;
+  else if (!openWorks().length) say = pays.some(y => leftOf(y) > 0) ? `<span class="v2-okc">✓ הכול הושלם</span>. נשאר רק התשלום.` : `<span class="v2-okc">✓ הכול הושלם</span>. תודה!`;
   else { const p = openWorks().slice().sort((a, b) => (a.deadline || "9").localeCompare(b.deadline || "9"))[0], busy = adsOf(p).some(a => fixBusy(p, a)) || roundsOf(p.id, "").some(r => !roundClosed(p, r, null));
-    say = `<span class="v2-okc">הכול אצלי ✓</span> ${busy ? "קיבלתי את התיקונים ואני עובדת עליהם" : `אני עובדת על ${esc(p.title)}`}${p.deadline ? `. המסירה מתוכננת ל${dayDM(p.deadline)}` : ""}.`; }
+    say = `<span class="v2-okc">✓ הכול אצלי</span>. ${busy ? "קיבלתי את התיקונים ואני עובדת עליהם" : `אני עובדת על ${esc(p.title)}`}${p.deadline ? `. המסירה מתוכננת ל${dayDM(p.deadline)}` : ""}.`; }
   return `<header class="v2-head"><h1>שלום ${esc(first)}</h1>${say ? `<p class="v2-say">${say}</p>` : ""}</header>`;
 }
 /* everything she needs to do, each with its own way to do it right here: a short answer box, or a jump to the picture */
